@@ -17,15 +17,23 @@ For a PyTorch reimplementation see https://github.com/rail-berkeley/rlkit/tree/m
 
 ## How to run the code
 
+Go to:
+https://www.roboti.us/download.html
+https://www.roboti.us/license.html
+
+and download mjpro150, put in .mujoco folder. Put the license there also. 
+
+Install depenedencies: `sudo apt install libosmesa6-dev libgl1-mesa-glx libglfw3` and `sudo apt-get install patchelf`. 
+
+Then run `pip install "cython<3"`
+
 ### Install dependencies
 
 ```bash
 pip install --upgrade pip
 
-pip install -r requirements.txt
+pip install -r requirements_cuda12.txt
 
-# Installs the wheel compatible with Cuda 11 and cudnn 8.
-pip install --upgrade "jax[cuda]>=0.2.27" -f https://storage.googleapis.com/jax-releases/jax_releases.html
 ```
 
 Also, see other configurations for CUDA [here](https://github.com/google/jax#pip-installation-gpu-cuda).
