@@ -17,6 +17,8 @@ For a PyTorch reimplementation see https://github.com/rail-berkeley/rlkit/tree/m
 
 ## How to run the code
 
+**This was tested using python 3.10**
+
 Go to:
 https://www.roboti.us/download.html
 https://www.roboti.us/license.html

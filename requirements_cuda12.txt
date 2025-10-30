@@ -7,7 +7,7 @@ gym[mujoco] >= 0.18.0
 gdown >= 3.12.2
 tqdm >= 4.60.0
 flax == 0.8.4
-jax[cuda12] == 0.4.29
+jax[cuda12] == 0.4.28
 chex == 0.1.0
 ml_collections >= 0.1.0
 optax == 0.2.4
