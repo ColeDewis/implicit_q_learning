@@ -32,8 +32,6 @@ Then run `pip install "cython<3"`
 ### Install dependencies
 
 ```bash
-pip install --upgrade pip
-
 pip install -r requirements_cuda12.txt
 
 ```
