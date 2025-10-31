@@ -1,8 +1,10 @@
 #!/bin/bash
 
-#SBATCH --time=01:30:00
+# I ran this on fir.
+
+#SBATCH --time=00:30:00
 #SBATCH --ntasks=1
-#SBATCH --gres=gpu:1
+#SBATCH --gpus-per-node=nvidia_h100_80gb_hbm3_2g.20gb:1
 #SBATCH --mem=16G
 #SBATCH --cpus-per-task=3 
 
@@ -21,6 +23,6 @@ cd $SLURM_TMPDIR
 tar -xvf venv310.tar
 source .venv/bin/activate
 
-python $path/train_offline.py --env_name=antmaze-large-play-v0 --config=configs/antmaze_config.py --eval_episodes=100 --eval_interval=100000
+python $path/train_offline.py --env_name=antmaze-large-play-v0 --config=$path/configs/antmaze_config.py --eval_episodes=100 --eval_interval=100000
 
 cp ./tmp/42.txt $path/

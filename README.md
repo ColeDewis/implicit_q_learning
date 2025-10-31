@@ -60,5 +60,13 @@ Finetuning on AntMaze tasks
 python train_finetune.py --env_name=antmaze-large-play-v0 --config=configs/antmaze_finetune_config.py --eval_episodes=100 --eval_interval=100000 --replay_buffer_size 2000000
 ```
 
+## Compute Canada Setup
+
+Use the `requirements_cc.txt` file. 
+
+**You can try the setup_cc.sh and venv_setup.sh scripts but they are untested so far**, as I followed those steps in an interactive job.
+
+The `test_job.sh` script should work however.
+
 ## Misc
 The implementation is based on [JAXRL](https://github.com/ikostrikov/jaxrl).
