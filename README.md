@@ -64,6 +64,18 @@ python train_finetune.py --env_name=antmaze-large-play-v0 --config=configs/antma
 
 Use the `requirements_cc.txt` file. 
 
+To set up dependencies, clone the repo, then inside the folder:
+`chmod +x setup_cc.sh`
+`./setup_cc.sh`
+
+This will schedule a job to create a virtual environment tarfile. Once you have `venv310.tar` in your folder, try the test job.
+
+Run the test job with `sbatch --export=path="$(pwd)" test_job.sh`
+
+I'm not sure if this process works on other clusters since one of the requirements requires a git clone, and supposedly the compute nodes don't have internet access for narval and others.  
+
+The test job does require the dataset to already be on the compute canada server. You can download in advance from here: https://huggingface.co/datasets/imone/D4RL/blob/main, since I think it's better to get the dataset in advance rather than having your job download it.
+
 **You can try the setup_cc.sh and venv_setup.sh scripts but they are untested so far**, as I followed those steps in an interactive job.
 
 The `test_job.sh` script should work however.
