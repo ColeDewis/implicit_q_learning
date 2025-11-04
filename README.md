@@ -62,23 +62,34 @@ python train_finetune.py --env_name=antmaze-large-play-v0 --config=configs/antma
 
 ## Compute Canada Setup
 
+**Below is tested on fir and nibi**
+
 Use the `requirements_cc.txt` file. 
 
 To set up dependencies, clone the repo, then inside the folder:
 `chmod +x setup_cc.sh`
+`chmod +x venv_setup.sh`
 `./setup_cc.sh`
 
-This will schedule a job to create a virtual environment tarfile. Once you have `venv310.tar` in your folder, try the test job.
+Then, you need to create the virtual env. For this, use an interactive job:
 
-Run the test job with `sbatch --export=path="$(pwd)" test_job.sh`
+`salloc --time=0:30:0 --mem-per-cpu=16G --ntasks=1`
 
-I'm not sure if this process works on other clusters since one of the requirements requires a git clone, and supposedly the compute nodes don't have internet access for narval and others.  
+Then in the job, run `./venv_setup.sh` to create the `venv310.tar` file.
 
-The test job does require the dataset to already be on the compute canada server. You can download in advance from here: https://huggingface.co/datasets/imone/D4RL/blob/main, since I think it's better to get the dataset in advance rather than having your job download it.
+Once you have `venv310.tar` in your folder, try the test job.
 
-**You can try the setup_cc.sh and venv_setup.sh scripts but they are untested so far**, as I followed those steps in an interactive job.
+Run the test job with `sbatch --export=path="$(pwd)" test_job.sh`. 
 
-The `test_job.sh` script should work however.
+I'm not sure if this process works on other clusters since one of the requirements requires a git clone, and supposedly the compute nodes don't have internet access for narval and others. But, it works fine on fir and nibi. Maybe it would work doing the setup in an interactive job. Otherwise, the setup is probably possible from pre-downloading the wheel or by moving the repo over; I may try that later.
+
+The test job does require the dataset to already be on the compute canada server. You can download in advance from here: https://huggingface.co/datasets/imone/D4RL/tree/main, since I think it's better to get the dataset in advance rather than having your job download it. Put it in a folder `~/.d4rl/datasets/`
+
+### Notes about this setup
+I tried having the virtual env be created in a non-interactive job, but it seemed to have issues with using the venv after.
+
+
+
 
 ## Misc
 The implementation is based on [JAXRL](https://github.com/ikostrikov/jaxrl).

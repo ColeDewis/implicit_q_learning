@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# I ran this on fir.
+# I ran this on fir and nibi.
 
 #SBATCH --time=00:30:00
 #SBATCH --ntasks=1
