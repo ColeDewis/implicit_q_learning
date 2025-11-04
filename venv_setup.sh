@@ -13,6 +13,5 @@ pip install "cython<3"
 pip install -r requirements_cc.txt
 
 tar -cavf venv310.tar .venv
-cp venv310.tar $path/
 
 pip freeze

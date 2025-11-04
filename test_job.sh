@@ -2,7 +2,7 @@
 
 # I ran this on fir and nibi.
 
-#SBATCH --time=00:30:00
+#SBATCH --time=00:40:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=nvidia_h100_80gb_hbm3_2g.20gb:1
 #SBATCH --mem=16G

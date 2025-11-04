@@ -62,7 +62,7 @@ python train_finetune.py --env_name=antmaze-large-play-v0 --config=configs/antma
 
 ## Compute Canada Setup
 
-**Below is tested on fir and nibi**
+**Below is tested on fir, nibi, narval**
 
 Use the `requirements_cc.txt` file. 
 
@@ -71,19 +71,23 @@ To set up dependencies, clone the repo, then inside the folder:
 `chmod +x venv_setup.sh`
 `./setup_cc.sh`
 
-Then, you need to create the virtual env. For this, use an interactive job:
+Then, you need to create the virtual env. On nibi and fir, I used an interactive job:
 
 `salloc --time=0:30:0 --mem-per-cpu=16G --ntasks=1`
 
-Then in the job, run `./venv_setup.sh` to create the `venv310.tar` file.
+to try and make things faster. On other clusters (e.g. narval) I believe the compute nodes don't have internet access; on there I just ran it on the login node.
 
-Once you have `venv310.tar` in your folder, try the test job.
+Then run `./venv_setup.sh` to create the `venv310.tar` file.
+
+Once you have `venv310.tar` in your folder, try the test job. **Note that the GPU you need to specify may vary between clusters**. See https://docs.alliancecan.ca/wiki/Multi-Instance_GPU#Available_configurations
+
+Nibi and fir: `#SBATCH --gpus-per-node=nvidia_h100_80gb_hbm3_2g.20gb:1`
+Narval: `#SBATCH --gpus-per-node=a100_3g.20gb:1`
+
+The test job does require the dataset to already be on the compute canada server. You can download in advance from here: https://huggingface.co/datasets/imone/D4RL/tree/main, since I think it's better to get the dataset in advance rather than having your job download it. You need `Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5`. Put it in a folder `~/.d4rl/datasets/` by copying it to the cluster with `scp`.
 
 Run the test job with `sbatch --export=path="$(pwd)" test_job.sh`. 
 
-I'm not sure if this process works on other clusters since one of the requirements requires a git clone, and supposedly the compute nodes don't have internet access for narval and others. But, it works fine on fir and nibi. Maybe it would work doing the setup in an interactive job. Otherwise, the setup is probably possible from pre-downloading the wheel or by moving the repo over; I may try that later.
-
-The test job does require the dataset to already be on the compute canada server. You can download in advance from here: https://huggingface.co/datasets/imone/D4RL/tree/main, since I think it's better to get the dataset in advance rather than having your job download it. Put it in a folder `~/.d4rl/datasets/`
 
 ### Notes about this setup
 I tried having the virtual env be created in a non-interactive job, but it seemed to have issues with using the venv after.
