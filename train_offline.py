@@ -12,6 +12,7 @@ import wrappers
 from dataset_utils import D4RLDataset, split_into_trajectories
 from evaluation import evaluate
 from learner import Learner
+from DDQN_learner import DDQNLearner
 
 FLAGS = flags.FLAGS
 
