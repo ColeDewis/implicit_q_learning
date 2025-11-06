@@ -1,4 +1,5 @@
 import os
+import random
 from typing import Tuple
 
 import gym
@@ -64,14 +65,22 @@ def normalize(dataset):
 
 
 def make_env_and_dataset(env_name: str, seed: int) -> Tuple[gym.Env, D4RLDataset]:
-    # NOTE I think this has to be before the env.
+    # NOTE I think this has to be before making env
     np.random.seed(seed)
-    env = gym.make(env_name)
+    random.seed(seed)
+    env = gym.make(env_name, seed=seed)
 
     env = wrappers.EpisodeMonitor(env)
     env = wrappers.SinglePrecision(env)
 
     env.seed(seed)
+
+    # NOTE: antmaze doesn't seed properly otherwise, this seems to resolve it
+    # see: https://github.com/Farama-Foundation/D4RL/issues/202
+    # here we directly pull out the AntMazeEnv to call its seed method.
+    if "antmaze" in FLAGS.env_name:
+        env.env.env.env.env._wrapped_env.seed(seed)
+
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
 
