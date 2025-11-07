@@ -6,6 +6,7 @@ __pycache__/
 # stuff
 venv310/
 tmp/
+venv/
 
 # C extensions
 *.so

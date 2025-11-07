@@ -26,7 +26,7 @@ def target_update(critic: Model, target_critic: Model, tau: float) -> Model:
 def _update_jit(
     rng: PRNGKey, actor: Model, critic: Model, value: Model,
     target_critic: Model, batch: Batch, discount: float, tau: float,
-    temperature: float, update_target: bool, 
+    temperature: float,
 ) -> Tuple[PRNGKey, Model, Model, Model, Model, Model, InfoDict]:
 
     new_value, value_info = update_v(target_critic, value, batch)
@@ -36,10 +36,7 @@ def _update_jit(
 
     new_critic, critic_info = update_q(critic, target_critic, new_value, batch, discount)
 
-    if update_target:
-        new_target_critic = target_update(new_critic, target_critic, tau)
-    else:
-        new_target_critic = target_critic
+    new_target_critic = target_update(new_critic, target_critic, tau)
 
     return rng, new_actor, new_critic, new_value, new_target_critic, {
         **critic_info,
@@ -69,6 +66,7 @@ class DDQNLearner(object):
         """
 
         self.discount = discount
+        self.tau = tau
         self.temperature = temperature
 
         rng = jax.random.PRNGKey(seed)
@@ -125,10 +123,10 @@ class DDQNLearner(object):
         actions = np.asarray(actions)
         return np.clip(actions, -1, 1)
 
-    def update(self, batch: Batch, update_target: bool) -> InfoDict:
+    def update(self, batch: Batch, tau: float) -> InfoDict:
         new_rng, new_actor, new_critic, new_value, new_target_critic, info = _update_jit(
             self.rng, self.actor, self.critic, self.value, self.target_critic,
-            batch, self.discount, self.tau, self.temperature, update_target)
+            batch, self.discount, tau, self.temperature)
 
         self.rng = new_rng
         self.actor = new_actor

@@ -103,7 +103,7 @@ def main(_):
     env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed)
 
     kwargs = dict(FLAGS.config)
-    agent = Learner(
+    agent = DDQNLearner(
         FLAGS.seed,
         env.observation_space.sample()[np.newaxis],
         env.action_space.sample()[np.newaxis],
@@ -111,13 +111,23 @@ def main(_):
         **kwargs,
     )
 
+    dtau = 0.8
+
     eval_returns = []
     for i in tqdm.tqdm(
         range(1, FLAGS.max_steps + 1), smoothing=0.1, disable=not FLAGS.tqdm
     ):
         batch = dataset.sample(FLAGS.batch_size)
 
-        update_info = agent.update(batch)
+        # update_info = agent.update(batch)
+
+        # update target
+        if i % 10 == 0:
+            tau = dtau
+        # Do no updates to target 
+        else:
+            tau = 0
+        update_info = agent.update(batch, tau)
 
         if i % FLAGS.log_interval == 0:
             for k, v in update_info.items():

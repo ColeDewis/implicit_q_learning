@@ -7,19 +7,19 @@ from common import Batch, InfoDict, Model, Params
 from random import randint, uniform
 
 
-def get_max_action_values(critic: Model, states: Tuple, action_range: Tuple):
-    return [uniform(*action_range) for i in range(len(states))], [uniform(0, 1) for i in range(len(states))]
+def get_max_actions_values(critic: Model, states: Tuple, action_range: Tuple):
+    #                          best actions                                                                           Value of best actions
+    return jnp.array([jnp.array([uniform(*action_range)]*8) for i in range(len(states))]).reshape(-1, 8), jnp.array([uniform(*action_range) for i in range(len(states))])
 
 def update_v(critic: Model, value: Model, batch: Batch) -> Tuple[Model, InfoDict]:
     # actions = batch.actions
-    q = get_max_action_values(critic, batch.observations, [0, 5])
+    _, q = get_max_actions_values(critic, batch.observations, [0, 5])
 
     
     def value_loss_fn(value_params: Params) -> Tuple[jnp.ndarray, InfoDict]:
         v = value.apply({'params': value_params}, batch.observations)
-        assert(q.shape == v.shape, f"Jasper fucked up the q_mean stuff\nq_mean shape: {q_means.shape}\nv shape: {v.shape}")
         # this may be invalid, might need to go and get the prob of each s,a pair
-        value_loss = 0.5 * (v - q)**2
+        value_loss = (0.5 * (v - q)**2).mean()
         return value_loss, {
             'value_loss': value_loss,
             'v': v.mean(),
@@ -48,7 +48,7 @@ def update_v(critic: Model, value: Model, batch: Batch) -> Tuple[Model, InfoDict
 def update_q(critic: Model, target_critic:Model, target_value: Model, batch: Batch,
              discount: float) -> Tuple[Model, InfoDict]:
     
-    next_actions, _ = get_max_action_values(critic, batch.observations, [0, 5])
+    next_actions, _ = get_max_actions_values(critic, batch.observations, [0, 5])
 
     next_action_values = target_critic(batch.observations, next_actions)
 
