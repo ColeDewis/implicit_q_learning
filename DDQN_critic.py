@@ -10,8 +10,7 @@ from random import randint, uniform
 def get_max_action_values(critic: Model, states: Tuple, action_range: Tuple):
     return [uniform(*action_range) for i in range(len(states))], [uniform(0, 1) for i in range(len(states))]
 
-def update_v(critic: Model, value: Model, batch: Batch,
-             action_space: jnp.array) -> Tuple[Model, InfoDict]:
+def update_v(critic: Model, value: Model, batch: Batch) -> Tuple[Model, InfoDict]:
     # actions = batch.actions
     q = get_max_action_values(critic, batch.observations, [0, 5])
 

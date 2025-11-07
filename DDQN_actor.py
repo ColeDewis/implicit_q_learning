@@ -27,3 +27,6 @@ def update(key: PRNGKey, actor: Model, critic: Model, value: Model,
     new_actor, info = actor.apply_gradient(actor_loss_fn)
 
     return new_actor, info
+
+
+# python requirements

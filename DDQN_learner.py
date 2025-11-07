@@ -26,11 +26,10 @@ def target_update(critic: Model, target_critic: Model, tau: float) -> Model:
 def _update_jit(
     rng: PRNGKey, actor: Model, critic: Model, value: Model,
     target_critic: Model, batch: Batch, discount: float, tau: float,
-    expectile: float, temperature: float, update_target: bool, 
-    actions: jnp.ndarray
+    temperature: float, update_target: bool, 
 ) -> Tuple[PRNGKey, Model, Model, Model, Model, Model, InfoDict]:
 
-    new_value, value_info = update_v(target_critic, value, batch, actions)
+    new_value, value_info = update_v(target_critic, value, batch)
     key, rng = jax.random.split(rng)
     new_actor, actor_info = awr_update_actor(key, actor, target_critic,
                                              new_value, batch, temperature)
@@ -129,7 +128,7 @@ class DDQNLearner(object):
     def update(self, batch: Batch, update_target: bool) -> InfoDict:
         new_rng, new_actor, new_critic, new_value, new_target_critic, info = _update_jit(
             self.rng, self.actor, self.critic, self.value, self.target_critic,
-            batch, self.discount, self.tau, self.expectile, self.temperature, update_target, self.action_space)
+            batch, self.discount, self.tau, self.temperature, update_target)
 
         self.rng = new_rng
         self.actor = new_actor
