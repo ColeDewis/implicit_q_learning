@@ -22,12 +22,12 @@ cd $SLURM_TMPDIR
 tar -xvf venv310.tar
 source .venv/bin/activate
 
-mkdir $path/results/halfcheetah_medium_expert/
+mkdir -p $path/results/IQL/halfcheetah_medium_expert/
 
 # NOTE: CC seems to want jobs at least ~1hr.
 python $path/train_offline.py --env_name=halfcheetah-medium-expert-v2 --config=$path/configs/mujoco_config.py --seed=$SLURM_ARRAY_TASK_ID
-cp ./tmp/${SLURM_ARRAY_TASK_ID}.txt $path/results/halfcheetah_medium_expert/
+cp ./tmp/${SLURM_ARRAY_TASK_ID}.txt $path/results/IQL/halfcheetah_medium_expert/
 
 SECOND_SEED=$((SLURM_ARRAY_TASK_ID + 1))
 python $path/train_offline.py --env_name=halfcheetah-medium-expert-v2 --config=$path/configs/mujoco_config.py --seed=$SECOND_SEED
-cp ./tmp/${SECOND_SEED}.txt $path/results/halfcheetah_medium_expert/
+cp ./tmp/${SECOND_SEED}.txt $path/results/IQL/halfcheetah_medium_expert/
