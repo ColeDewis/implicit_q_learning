@@ -111,6 +111,7 @@ def main(_):
         **kwargs,
     )
 
+    # TODO: Add this to the config
     dtau = 0.8
 
     eval_returns = []
@@ -122,6 +123,8 @@ def main(_):
         # update_info = agent.update(batch)
 
         # update target
+        # TODO: Add target update freq to config
+        # TODO: Add flag to config to select for DDQN or IQL
         if i % 10 == 0:
             tau = dtau
         # Do no updates to target 
