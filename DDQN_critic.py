@@ -1,20 +1,22 @@
+from random import randint, uniform
 from typing import Tuple
 
+import jax
 import jax.numpy as jnp
 
 from common import Batch, InfoDict, Model, Params
 
-from random import randint, uniform
+# fmt: off
 
-
-def get_max_actions_values(critic: Model, states: Tuple, action_range: Tuple):
+def get_max_actions_values(critic: Model, states: Tuple, action_dim: int, action_range: Tuple):
+    action_dim = int(action_dim)
     #                          best actions                                                                           Value of best actions
-    return jnp.array([jnp.array([uniform(*action_range)]*8) for i in range(len(states))]).reshape(-1, 8), jnp.array([uniform(*action_range) for i in range(len(states))])
+    return jnp.array([jnp.array([uniform(*action_range)]*action_dim) for i in range(len(states))]).reshape(-1, action_dim), jnp.array([uniform(*action_range) for i in range(len(states))])
 
-def update_v(critic: Model, value: Model, batch: Batch) -> Tuple[Model, InfoDict]:
+def update_v(critic: Model, value: Model, batch: Batch, max_action_values) -> Tuple[Model, InfoDict]:
     # actions = batch.actions
-    _, q = get_max_actions_values(critic, batch.observations, [0, 5])
-
+    # _, q = get_max_actions_values(critic, batch.observations, action_dim, [0, 5])
+    q = max_action_values
     
     def value_loss_fn(value_params: Params) -> Tuple[jnp.ndarray, InfoDict]:
         v = value.apply({'params': value_params}, batch.observations)
@@ -46,10 +48,11 @@ def update_v(critic: Model, value: Model, batch: Batch) -> Tuple[Model, InfoDict
     # return new_value, info
 
 def update_q(critic: Model, target_critic:Model, target_value: Model, batch: Batch,
-             discount: float) -> Tuple[Model, InfoDict]:
-    
-    next_actions, _ = get_max_actions_values(critic, batch.observations, [0, 5])
+             discount: float, max_actions) -> Tuple[Model, InfoDict]:
 
+    # next_actions, _ = get_max_actions_values(critic, batch.observations, action_dim, [0, 5])
+
+    next_actions = max_actions
     next_action_values = target_critic(batch.observations, next_actions)
 
     target_q = batch.rewards + discount * batch.masks * next_action_values

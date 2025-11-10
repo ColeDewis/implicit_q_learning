@@ -5,6 +5,7 @@ import jax.numpy as jnp
 
 from common import Batch, InfoDict, Model, Params, PRNGKey
 
+# fmt: off
 
 def update(key: PRNGKey, actor: Model, critic: Model, value: Model,
            batch: Batch, temperature: float) -> Tuple[Model, InfoDict]:
@@ -27,6 +28,3 @@ def update(key: PRNGKey, actor: Model, critic: Model, value: Model,
     new_actor, info = actor.apply_gradient(actor_loss_fn)
 
     return new_actor, info
-
-
-# python requirements

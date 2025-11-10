@@ -11,9 +11,9 @@ from tensorboardX import SummaryWriter
 
 import wrappers
 from dataset_utils import D4RLDataset, split_into_trajectories
+from DDQN_learner import DDQNLearner
 from evaluation import evaluate
 from learner import Learner
-from DDQN_learner import DDQNLearner
 
 FLAGS = flags.FLAGS
 
@@ -111,6 +111,13 @@ def main(_):
         max_steps=FLAGS.max_steps,
         **kwargs,
     )
+    # agent = Learner(
+    #     FLAGS.seed,
+    #     env.observation_space.sample()[np.newaxis],
+    #     env.action_space.sample()[np.newaxis],
+    #     max_steps=FLAGS.max_steps,
+    #     **kwargs,
+    # )
 
     # TODO: Add this to the config
     dtau = 0.8
@@ -128,7 +135,7 @@ def main(_):
         # TODO: Add flag to config to select for DDQN or IQL
         if i % 10 == 0:
             tau = dtau
-        # Do no updates to target 
+        # Do no updates to target
         else:
             tau = 0
         update_info = agent.update(batch, tau)

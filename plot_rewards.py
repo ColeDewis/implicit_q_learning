@@ -35,21 +35,46 @@ def aggregate_data_across_seeds(folder_path):
 
 def main():
     # Hardcoded folder path
-    FOLDER_PATH = "/home/coled/655/implicit_q_learning/results/IQL/Ant_maze_hardest_noisy_multistart"
-    steps, rewards = aggregate_data_across_seeds(FOLDER_PATH)
+    IQL_FOLDER_PATH = (
+        "/home/coled/655/implicit_q_learning/results/IQL/halfcheetah_medium_expert"
+    )
+    steps, iql_rewards = aggregate_data_across_seeds(IQL_FOLDER_PATH)
 
-    mean_rewards = np.mean(rewards, axis=0)
-    min_rewards = np.min(rewards, axis=0)
-    max_rewards = np.max(rewards, axis=0)
+    iql_mean_rewards = np.mean(iql_rewards, axis=0)
+    iql_min_rewards = np.min(iql_rewards, axis=0)
+    iql_max_rewards = np.max(iql_rewards, axis=0)
 
     plt.figure(figsize=(10, 6))
-    plt.plot(steps, mean_rewards, label="IQL", color="blue")
+    plt.plot(steps, iql_mean_rewards, label="IQL", color="blue")
     plt.fill_between(
-        steps, min_rewards, max_rewards, color="blue", alpha=0.2, label="Min/Max Range"
+        steps,
+        iql_min_rewards,
+        iql_max_rewards,
+        color="blue",
+        alpha=0.2,
+        label="Min/Max Range",
     )
+
+    DDQN_FOLDER_PATH = IQL_FOLDER_PATH.replace("IQL", "DDQN")
+    # DDQN_FOLDER_PATH = None
+    if DDQN_FOLDER_PATH is not None:
+        _, ddqn_rewards = aggregate_data_across_seeds(DDQN_FOLDER_PATH)
+        ddqn_mean_rewards = np.mean(ddqn_rewards, axis=0)
+        ddqn_min_rewards = np.min(ddqn_rewards, axis=0)
+        ddqn_max_rewards = np.max(ddqn_rewards, axis=0)
+        plt.plot(steps, ddqn_mean_rewards, label="DDQN", color="orange")
+        plt.fill_between(
+            steps,
+            ddqn_min_rewards,
+            ddqn_max_rewards,
+            color="orange",
+            alpha=0.2,
+            label="Min/Max Range",
+        )
+
     plt.xlabel("Steps")
     plt.ylabel("Reward")
-    plt.title(f"Reward vs Steps on {FOLDER_PATH.split('/')[-1]}")
+    plt.title(f"Reward vs Steps on {IQL_FOLDER_PATH.split('/')[-1]}")
     plt.legend()
     plt.grid(True)
     plt.show()
