@@ -73,7 +73,8 @@ def make_env_and_dataset(env_name: str, seed: int) -> Tuple[gym.Env, D4RLDataset
     # see: https://github.com/Farama-Foundation/D4RL/issues/202
     # here we directly pull out the AntMazeEnv to call its seed method.
     if "antmaze" in FLAGS.env_name:
-        env.env.env.env.env._wrapped_env.seed(seed)
+        # NOTE: this might need one more .env if you're not on compute canada.
+        env.env.env.env._wrapped_env.seed(seed)
 
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
