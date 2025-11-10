@@ -35,9 +35,7 @@ def aggregate_data_across_seeds(folder_path):
 
 def main():
     # Hardcoded folder path
-    FOLDER_PATH = (
-        "/home/coled/655/implicit_q_learning/results/halfcheetah_medium_expert"
-    )
+    FOLDER_PATH = "/home/coled/655/implicit_q_learning/results/IQL/Ant_maze_hardest_noisy_multistart"
     steps, rewards = aggregate_data_across_seeds(FOLDER_PATH)
 
     mean_rewards = np.mean(rewards, axis=0)
