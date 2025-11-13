@@ -9,7 +9,7 @@ from ml_collections import config_flags
 from tensorboardX import SummaryWriter
 
 import wrappers
-from dataset_utils import D4RLDataset, split_into_trajectories
+from dataset_utils import D4RLDataset, RLBenchDataset, split_into_trajectories
 from evaluation import evaluate
 from learner import Learner
 
@@ -56,6 +56,13 @@ def make_env_and_dataset(env_name: str,
                          seed: int) -> Tuple[gym.Env, D4RLDataset]:
     env = gym.make(env_name)
 
+
+    # dataset = D4RLDataset(env)
+    dataset = RLBenchDataset('test_data.npy')
+
+    env.action_space = dataset.action_space
+    env.observation_space = dataset.observation_space
+
     env = wrappers.EpisodeMonitor(env)
     env = wrappers.SinglePrecision(env)
 
@@ -63,7 +70,6 @@ def make_env_and_dataset(env_name: str,
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
 
-    dataset = D4RLDataset(env)
 
     if 'antmaze' in FLAGS.env_name:
         dataset.rewards -= 1.0
@@ -107,18 +113,18 @@ def main(_):
                     summary_writer.add_histogram(f'training/{k}', v, i)
             summary_writer.flush()
 
-        if i % FLAGS.eval_interval == 0:
-            eval_stats = evaluate(agent, env, FLAGS.eval_episodes)
-
-            for k, v in eval_stats.items():
-                summary_writer.add_scalar(f'evaluation/average_{k}s', v, i)
-            summary_writer.flush()
-
-            eval_returns.append((i, eval_stats['return']))
-            np.savetxt(os.path.join(FLAGS.save_dir, f'{FLAGS.seed}.txt'),
-                       eval_returns,
-                       fmt=['%d', '%.1f'])
-
+        # if i % FLAGS.eval_interval == 0:
+        #     eval_stats = evaluate(agent, env, FLAGS.eval_episodes)
+        #
+        #     for k, v in eval_stats.items():
+        #         summary_writer.add_scalar(f'evaluation/average_{k}s', v, i)
+        #     summary_writer.flush()
+        #
+        #     eval_returns.append((i, eval_stats['return']))
+        #     np.savetxt(os.path.join(FLAGS.save_dir, f'{FLAGS.seed}.txt'),
+        #                eval_returns,
+        #                fmt=['%d', '%.1f'])
+        #
 
 if __name__ == '__main__':
     app.run(main)
