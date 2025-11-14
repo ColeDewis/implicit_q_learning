@@ -6,14 +6,25 @@ from common import Batch, InfoDict, Model, Params
 
 from random import randint, uniform
 
+from max_approx.CrossEntropy import CEM
 
-def get_max_actions_values(critic: Model, states: Tuple, action_range: Tuple):
+
+def get_max_actions_values(critic: Model, states: Tuple, num_actions: int):
+    cem = CEM(critic, d=num_actions, maxits=2, N=10, Ne=5)
+
+    best_actions = [cem.eval(state) for state in states]
+    q_values = [critic(state, best_action) for state, best_action in zip(states, best_actions)]
+
+    return jnp.array(best_actions), jnp.array(q_values)
+
+
     #                          best actions                                                                           Value of best actions
-    return jnp.array([jnp.array([uniform(*action_range)]*8) for i in range(len(states))]).reshape(-1, 8), jnp.array([uniform(*action_range) for i in range(len(states))])
+    # return jnp.array([jnp.array([uniform(*[0, 5])]*8) for i in range(len(states))]).reshape(-1, 8), jnp.array([uniform(*[0, 5]) for i in range(len(states))])
 
 def update_v(critic: Model, value: Model, batch: Batch) -> Tuple[Model, InfoDict]:
     # actions = batch.actions
-    _, q = get_max_actions_values(critic, batch.observations, [0, 5])
+
+    _, q = get_max_actions_values(critic, batch.observations, batch.actions.shape[1])
 
     
     def value_loss_fn(value_params: Params) -> Tuple[jnp.ndarray, InfoDict]:
@@ -48,7 +59,7 @@ def update_v(critic: Model, value: Model, batch: Batch) -> Tuple[Model, InfoDict
 def update_q(critic: Model, target_critic:Model, target_value: Model, batch: Batch,
              discount: float) -> Tuple[Model, InfoDict]:
     
-    next_actions, _ = get_max_actions_values(critic, batch.observations, [0, 5])
+    next_actions, _ = get_max_actions_values(critic, batch.observations, batch.actions.shape[1])
 
     next_action_values = target_critic(batch.observations, next_actions)
 

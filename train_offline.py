@@ -14,6 +14,7 @@ from dataset_utils import D4RLDataset, split_into_trajectories
 from evaluation import evaluate
 from learner import Learner
 from DDQN_learner import DDQNLearner
+import jax
 
 FLAGS = flags.FLAGS
 
@@ -95,6 +96,7 @@ def make_env_and_dataset(env_name: str, seed: int) -> Tuple[gym.Env, D4RLDataset
 
 
 def main(_):
+    print(f"JAX default backend: {jax.default_backend()}")
     summary_writer = SummaryWriter(
         os.path.join(FLAGS.save_dir, "tb", str(FLAGS.seed)), write_to_disk=True
     )
