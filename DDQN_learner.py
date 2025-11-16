@@ -1,5 +1,6 @@
 """Implementations of algorithms for continuous control."""
 
+import time
 from typing import Optional, Sequence, Tuple
 
 import jax
@@ -9,18 +10,28 @@ import optax
 
 import policy
 import value_net
-from DDQN_actor import update as awr_update_actor
 from common import Batch, InfoDict, Model, PRNGKey
+from DDQN_actor import update as awr_update_actor
 from DDQN_critic import update_q, update_v
 
+# fmt: off
 
 def target_update(critic: Model, target_critic: Model, tau: float) -> Model:
-    new_target_params = jax.tree_map(
+    new_target_params = jax.tree_util.tree_map(
         lambda p, tp: p * tau + tp * (1 - tau), critic.params,
         target_critic.params)
 
     return target_critic.replace(params=new_target_params)
 
+# TODO: Also need to try CEM, gradient ascent. Also, should try sampling action rather than
+# mode possibly.
+def get_max_actions_values_actor(actor: Model, critic: Model, states: jnp.ndarray, temperature: float):
+    mode_actions = policy.sample_actions_deterministic(actor.apply_fn,
+                                             actor.params, states,
+                                             temperature)
+    mode_action_values = critic.apply({'params': critic.params}, states, mode_actions)
+
+    return mode_actions, mode_action_values
 
 @jax.jit
 def _update_jit(
@@ -29,13 +40,20 @@ def _update_jit(
     temperature: float,
 ) -> Tuple[PRNGKey, Model, Model, Model, Model, Model, InfoDict]:
 
-    new_value, value_info = update_v(target_critic, value, batch)
+    # TODO: not sure whether to use critic or target critic here to be "more correct"
+    _, max_action_values = get_max_actions_values_actor(actor, critic, batch.next_observations, temperature)
+
+    new_value, value_info = update_v(target_critic, value, batch, max_action_values)
+
     key, rng = jax.random.split(rng)
     new_actor, actor_info = awr_update_actor(key, actor, target_critic,
                                              new_value, batch, temperature)
+    
+    # TODO: I run this again since the actor has been updated. I'm not sure if we should keep this order
+    # of updates or not though.
+    max_actions, _ = get_max_actions_values_actor(actor, critic, batch.next_observations, temperature)
 
-    new_critic, critic_info = update_q(critic, target_critic, new_value, batch, discount)
-
+    new_critic, critic_info = update_q(critic, target_critic, new_value, batch, discount, max_actions)
     new_target_critic = target_update(new_critic, target_critic, tau)
 
     return rng, new_actor, new_critic, new_value, new_target_critic, {
@@ -111,6 +129,8 @@ class DDQNLearner(object):
         self.target_critic = target_critic
         self.rng = rng
         self.action_space = actions
+        self.action_dim = action_dim
+
 
     def sample_actions(self,
                        observations: np.ndarray,

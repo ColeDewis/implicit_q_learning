@@ -1,10 +1,12 @@
+from random import randint, uniform
 from typing import Tuple
 
+import jax
 import jax.numpy as jnp
 
 from common import Batch, InfoDict, Model, Params
 
-from random import randint, uniform
+# fmt: off
 
 from max_approx.CrossEntropy import CEM
 
@@ -21,7 +23,7 @@ def get_max_actions_values(critic: Model, states: Tuple, num_actions: int):
     #                          best actions                                                                           Value of best actions
     # return jnp.array([jnp.array([uniform(*[0, 5])]*8) for i in range(len(states))]).reshape(-1, 8), jnp.array([uniform(*[0, 5]) for i in range(len(states))])
 
-def update_v(critic: Model, value: Model, batch: Batch) -> Tuple[Model, InfoDict]:
+def update_v(critic: Model, value: Model, batch: Batch, max_action_values) -> Tuple[Model, InfoDict]:
     # actions = batch.actions
 
     _, q = get_max_actions_values(critic, batch.observations, batch.actions.shape[1])
@@ -59,8 +61,11 @@ def update_v(critic: Model, value: Model, batch: Batch) -> Tuple[Model, InfoDict
 def update_q(critic: Model, target_critic:Model, target_value: Model, batch: Batch,
              discount: float) -> Tuple[Model, InfoDict]:
     
-    next_actions, _ = get_max_actions_values(critic, batch.observations, batch.actions.shape[1])
+    max_actions, _ = get_max_actions_values(critic, batch.observations, batch.actions.shape[1])
 
+    # next_actions, _ = get_max_actions_values(critic, batch.observations, action_dim, [0, 5])
+
+    next_actions = max_actions
     next_action_values = target_critic(batch.observations, next_actions)
 
     target_q = batch.rewards + discount * batch.masks * next_action_values

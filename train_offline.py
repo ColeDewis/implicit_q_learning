@@ -11,6 +11,7 @@ from tensorboardX import SummaryWriter
 
 import wrappers
 from dataset_utils import D4RLDataset, split_into_trajectories
+from DDQN_learner import DDQNLearner
 from evaluation import evaluate
 from learner import Learner
 from DDQN_learner import DDQNLearner
@@ -74,7 +75,8 @@ def make_env_and_dataset(env_name: str, seed: int) -> Tuple[gym.Env, D4RLDataset
     # see: https://github.com/Farama-Foundation/D4RL/issues/202
     # here we directly pull out the AntMazeEnv to call its seed method.
     if "antmaze" in FLAGS.env_name:
-        env.env.env.env.env._wrapped_env.seed(seed)
+        # NOTE: this might need one more .env if you're not on compute canada.
+        env.env.env.env._wrapped_env.seed(seed)
 
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
@@ -112,6 +114,13 @@ def main(_):
         max_steps=FLAGS.max_steps,
         **kwargs,
     )
+    # agent = Learner(
+    #     FLAGS.seed,
+    #     env.observation_space.sample()[np.newaxis],
+    #     env.action_space.sample()[np.newaxis],
+    #     max_steps=FLAGS.max_steps,
+    #     **kwargs,
+    # )
 
     # TODO: Add this to the config
     dtau = 0.8
@@ -129,7 +138,7 @@ def main(_):
         # TODO: Add flag to config to select for DDQN or IQL
         if i % 10 == 0:
             tau = dtau
-        # Do no updates to target 
+        # Do no updates to target
         else:
             tau = 0
         update_info = agent.update(batch, tau)
