@@ -3,15 +3,20 @@ from typing import Tuple
 
 import jax
 import jax.numpy as jnp
+from gradient_ascent import ActionGradientAscent
 
 from common import Batch, InfoDict, Model, Params
 
-# fmt: off
-
+# fm
 def get_max_actions_values(critic: Model, states: Tuple, action_dim: int, action_range: Tuple):
-    action_dim = int(action_dim)
-    #                          best actions                                                                           Value of best actions
-    return jnp.array([jnp.array([uniform(*action_range)]*action_dim) for i in range(len(states))]).reshape(-1, action_dim), jnp.array([uniform(*action_range) for i in range(len(states))])
+    grad_ascent = ActionGradientAscent(critic, action_dim) # Can modify the max iterations, the action range, and gradient ascent step size.
+    best_actions, q_values = [grad_ascent.eval(state) for state in states]
+    return jnp.array(best_actions), jnp.array(q_values)
+    
+
+
+    #return jnp.array([jnp.array([uniform(*action_range)]*action_dim) for i in range(len(states))]).reshape(-1, action_dim), jnp.array([uniform(*action_range) for i in range(len(states))])
+
 
 def update_v(critic: Model, value: Model, batch: Batch, max_action_values) -> Tuple[Model, InfoDict]:
     # actions = batch.actions

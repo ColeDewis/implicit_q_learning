@@ -41,6 +41,7 @@ def _update_jit(
 ) -> Tuple[PRNGKey, Model, Model, Model, Model, Model, InfoDict]:
 
     # TODO: not sure whether to use critic or target critic here to be "more correct"
+    # i think the critic should be used 
     _, max_action_values = get_max_actions_values_actor(actor, critic, batch.next_observations, temperature)
 
     new_value, value_info = update_v(target_critic, value, batch, max_action_values)
