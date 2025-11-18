@@ -7,12 +7,14 @@ import random
 from jax.lax import stop_gradient
 import jax.numpy as jnp
 import jax
+from common import Model
+
 
 # TODO: Make this JAX also use a seed
 rand_key = jax.random.PRNGKey(0)
 
 class CEM():
-  def __init__(self, func, d, maxits=500, N=100, Ne=10, argmin=False, v_min=None, v_max=None, init_scale=1, sampleMethod='Gaussian'):
+  def __init__(self, func, d, maxits=500, N=100, Ne=10, argmin=False, v_min=None, v_max=None, init_scale=1, sampleMethod='Uniform'):
     self.func = func                  # target function
     self.d = d                        # dimension of function input X
     self.maxits = maxits              # maximum iteration
@@ -43,7 +45,7 @@ class CEM():
       x = self.__uniformSampleData(_min, _max)
       s = self.__functionReward(instr, x)
       s = self.__sortSample(s)
-      x = jnp.array([ s[i][0] for i in range(jnp.shape(s)[0]) ] )
+      x = jnp.array([ s[i][0] for i in range(len(s)) ] )
 
       # update parameters
       _min, _max = self.__updateUniformParams(x)
@@ -94,7 +96,7 @@ class CEM():
       rand_norm = jax.random.multivariate_normal(key=rand_key, mean=jnp.array([mu[j]]), cov=jnp.array([[sigma[j]+1e-17]]), shape=(self.N,))
       sample_matrix = sample_matrix.at[:,j].set(rand_norm.reshape(-1))
       if self.v_min is not None and self.v_max is not None:
-        sample_matrix[:,j] = jnp.clip(sample_matrix[:,j], self.v_min[j], self.v_max[j])
+        sample_matrix.at[:,j].set(jnp.clip(sample_matrix[:,j], self.v_min[j], self.v_max[j]))
     return sample_matrix
 
   def __initUniformParams(self):
@@ -114,15 +116,13 @@ class CEM():
     """sample N examples"""
     sample_matrix = jnp.zeros((self.N, self.d))
     for j in range(self.d):
-      sample_matrix[:,j] = jax.random.uniform(key=rand_key, minval=_min[j], maxval=_max[j], shape=(self.N,))
+      sample_matrix.at[:,j].set(jax.random.uniform(key=rand_key, minval=_min[j], maxval=_max[j], shape=(self.N,)))
     return sample_matrix
 
   def __functionReward(self, instr, x):
     bi = jnp.reshape(instr, [1, -1])
     bi = jnp.repeat(bi, self.N, axis=0)
-    # print(len(x[:,0]), len(self.func(bi, x)[:,0]))
-
-    # print(f"{len(x)=}")
+    
     return list(zip(x, stop_gradient(self.func(bi, x))))
 
   def __sortSample(self, s):

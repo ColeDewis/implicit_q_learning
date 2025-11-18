@@ -14,6 +14,10 @@ from common import Batch, InfoDict, Model, PRNGKey
 from DDQN_actor import update as awr_update_actor
 from DDQN_critic import update_q, update_v
 
+from functools import partial
+
+from max_approx.CrossEntropy import CEM 
+
 # fmt: off
 
 def target_update(critic: Model, target_critic: Model, tau: float) -> Model:
@@ -25,7 +29,7 @@ def target_update(critic: Model, target_critic: Model, tau: float) -> Model:
 
 # TODO: Also need to try CEM, gradient ascent. Also, should try sampling action rather than
 # mode possibly.
-def get_max_actions_values_actor(actor: Model, critic: Model, states: jnp.ndarray, temperature: float):
+def get_max_actions_values_AC(actor: Model, critic: Model, states: jnp.ndarray, temperature: float):
     mode_actions = policy.sample_actions_deterministic(actor.apply_fn,
                                              actor.params, states,
                                              temperature)
@@ -33,15 +37,29 @@ def get_max_actions_values_actor(actor: Model, critic: Model, states: jnp.ndarra
 
     return mode_actions, mode_action_values
 
-@jax.jit
+def get_max_actions_values_CEM(critic: Model, states: Tuple, num_actions: int):
+    cem = CEM(critic, d=num_actions, maxits=2, N=10, Ne=5)
+
+    best_actions = jnp.array([cem.eval(state) for state in states])
+    q_values = critic(states, best_actions)
+
+    return best_actions, q_values
+
+
+# @jax.jit
+@partial(jax.jit, static_argnames=['max_approx_method'])
 def _update_jit(
     rng: PRNGKey, actor: Model, critic: Model, value: Model,
     target_critic: Model, batch: Batch, discount: float, tau: float,
-    temperature: float,
+    temperature: float, max_approx_method:str
 ) -> Tuple[PRNGKey, Model, Model, Model, Model, Model, InfoDict]:
 
     # TODO: not sure whether to use critic or target critic here to be "more correct"
-    _, max_action_values = get_max_actions_values_actor(actor, critic, batch.next_observations, temperature)
+    if max_approx_method == "CEM":
+        max_actions, max_action_values = get_max_actions_values_CEM(critic, batch.next_observations, batch.actions.shape[1])
+    elif max_approx_method == "AC":
+        max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, temperature)
+
 
     new_value, value_info = update_v(target_critic, value, batch, max_action_values)
 
@@ -51,9 +69,9 @@ def _update_jit(
     
     # TODO: I run this again since the actor has been updated. I'm not sure if we should keep this order
     # of updates or not though.
-    max_actions, _ = get_max_actions_values_actor(actor, critic, batch.next_observations, temperature)
+    # max_actions, _ = get_max_actions_values_actor(actor, critic, batch.next_observations, temperature)
 
-    new_critic, critic_info = update_q(critic, target_critic, new_value, batch, discount, max_actions)
+    new_critic, critic_info = update_q(critic, target_critic, batch, discount, max_actions)
     new_target_critic = target_update(new_critic, target_critic, tau)
 
     return rng, new_actor, new_critic, new_value, new_target_critic, {
@@ -78,7 +96,8 @@ class DDQNLearner(object):
                  temperature: float = 0.1,
                  dropout_rate: Optional[float] = None,
                  max_steps: Optional[int] = None,
-                 opt_decay_schedule: str = "cosine"):
+                 opt_decay_schedule: str = "cosine", 
+                 max_approx_method: str = "CEM"):
         """
         An implementation of the version of Soft-Actor-Critic described in https://arxiv.org/abs/1801.01290
         """
@@ -130,6 +149,7 @@ class DDQNLearner(object):
         self.rng = rng
         self.action_space = actions
         self.action_dim = action_dim
+        self.max_approx_method = max_approx_method
 
 
     def sample_actions(self,
@@ -146,7 +166,7 @@ class DDQNLearner(object):
     def update(self, batch: Batch, tau: float) -> InfoDict:
         new_rng, new_actor, new_critic, new_value, new_target_critic, info = _update_jit(
             self.rng, self.actor, self.critic, self.value, self.target_critic,
-            batch, self.discount, tau, self.temperature)
+            batch, self.discount, tau, self.temperature, self.max_approx_method)
 
         self.rng = new_rng
         self.actor = new_actor

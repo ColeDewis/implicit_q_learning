@@ -28,13 +28,13 @@ flags.DEFINE_integer("eval_interval", 5000, "Eval interval.")
 flags.DEFINE_integer("batch_size", 256, "Mini batch size.")
 flags.DEFINE_integer("max_steps", int(1e6), "Number of training steps.")
 flags.DEFINE_boolean("tqdm", True, "Use tqdm progress bar.")
+flags.DEFINE_string("max_approx_method", "CEM", "Method to use for approximating max.")
 config_flags.DEFINE_config_file(
     "config",
     "default.py",
     "File path to the training hyperparameter configuration.",
     lock_config=False,
 )
-
 
 def normalize(dataset):
 
@@ -76,7 +76,9 @@ def make_env_and_dataset(env_name: str, seed: int) -> Tuple[gym.Env, D4RLDataset
     # here we directly pull out the AntMazeEnv to call its seed method.
     if "antmaze" in FLAGS.env_name:
         # NOTE: this might need one more .env if you're not on compute canada.
-        env.env.env.env._wrapped_env.seed(seed)
+        # env.env.env.env._wrapped_env.seed(seed)
+        # Not compute canada version
+        env.env.env.env.env._wrapped_env.seed(seed)
 
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
@@ -112,6 +114,7 @@ def main(_):
         env.observation_space.sample()[np.newaxis],
         env.action_space.sample()[np.newaxis],
         max_steps=FLAGS.max_steps,
+        max_approx_method=FLAGS.max_approx_method,
         **kwargs,
     )
     # agent = Learner(
