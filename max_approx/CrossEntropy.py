@@ -2,6 +2,8 @@
     Code Taken from https://github.com/jerrylin1121/cross_entropy_method/blob/master/
 """
 
+# 69.6
+
 import numpy as np
 import random
 from jax.lax import stop_gradient
@@ -11,10 +13,10 @@ from common import Model
 
 
 # TODO: Make this JAX also use a seed
-rand_key = jax.random.PRNGKey(0)
+
 
 class CEM():
-  def __init__(self, func, d, maxits=500, N=100, Ne=10, argmin=False, v_min=None, v_max=None, init_scale=1, sampleMethod='Uniform'):
+  def __init__(self, func, d, maxits=500, N=100, Ne=10, argmin=False, v_min=None, v_max=None, init_scale=1, sampleMethod='Uniform', rand_key=None):
     self.func = func                  # target function
     self.d = d                        # dimension of function input X
     self.maxits = maxits              # maximum iteration
@@ -27,6 +29,10 @@ class CEM():
 
     assert sampleMethod=='Gaussian' or sampleMethod=='Uniform'
     self.sampleMethod = sampleMethod  # which sample method gaussian or uniform, default to gaussian
+
+    self.rand_key = rand_key
+    if rand_key is None:
+      self.rand_key = jax.random.PRNGKey(0)
 
   def eval(self, instr):
     """evalution and return the solution"""
@@ -93,7 +99,7 @@ class CEM():
     for j in range(self.d):
       # sample_matrix[:,j] = jax.random.normal(loc=mu[j], scale=sigma[j]+1e-17, size=(self.N,))
       
-      rand_norm = jax.random.multivariate_normal(key=rand_key, mean=jnp.array([mu[j]]), cov=jnp.array([[sigma[j]+1e-17]]), shape=(self.N,))
+      rand_norm = jax.random.multivariate_normal(key=self.rand_key, mean=jnp.array([mu[j]]), cov=jnp.array([[sigma[j]+1e-17]]), shape=(self.N,))
       sample_matrix = sample_matrix.at[:,j].set(rand_norm.reshape(-1))
       if self.v_min is not None and self.v_max is not None:
         sample_matrix.at[:,j].set(jnp.clip(sample_matrix[:,j], self.v_min[j], self.v_max[j]))
@@ -116,7 +122,7 @@ class CEM():
     """sample N examples"""
     sample_matrix = jnp.zeros((self.N, self.d))
     for j in range(self.d):
-      sample_matrix.at[:,j].set(jax.random.uniform(key=rand_key, minval=_min[j], maxval=_max[j], shape=(self.N,)))
+      sample_matrix.at[:,j].set(jax.random.uniform(key=self.rand_key, minval=_min[j], maxval=_max[j], shape=(self.N,)))
     return sample_matrix
 
   def __functionReward(self, instr, x):

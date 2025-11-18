@@ -37,8 +37,8 @@ def get_max_actions_values_AC(actor: Model, critic: Model, states: jnp.ndarray, 
 
     return mode_actions, mode_action_values
 
-def get_max_actions_values_CEM(critic: Model, states: Tuple, num_actions: int):
-    cem = CEM(critic, d=num_actions, maxits=2, N=10, Ne=5)
+def get_max_actions_values_CEM(critic: Model, states: Tuple, num_actions: int, CEM_rng: PRNGKey):
+    cem = CEM(critic, d=num_actions, maxits=1, N=1, Ne=1, rand_key=CEM_rng)
 
     best_actions = jnp.array([cem.eval(state) for state in states])
     q_values = critic(states, best_actions)
@@ -54,16 +54,19 @@ def _update_jit(
     temperature: float, max_approx_method:str
 ) -> Tuple[PRNGKey, Model, Model, Model, Model, Model, InfoDict]:
 
+    key, rng = jax.random.split(rng)
+
     # TODO: not sure whether to use critic or target critic here to be "more correct"
     if max_approx_method == "CEM":
-        max_actions, max_action_values = get_max_actions_values_CEM(critic, batch.next_observations, batch.actions.shape[1])
+        # TODO: not sure if this messes with other rand seeds later, or if that even matters
+        CEM_rng, rng = jax.random.split(rng)
+        max_actions, max_action_values = get_max_actions_values_CEM(critic, batch.next_observations, batch.actions.shape[1], CEM_rng)
     elif max_approx_method == "AC":
         max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, temperature)
 
 
     new_value, value_info = update_v(target_critic, value, batch, max_action_values)
 
-    key, rng = jax.random.split(rng)
     new_actor, actor_info = awr_update_actor(key, actor, target_critic,
                                              new_value, batch, temperature)
     
