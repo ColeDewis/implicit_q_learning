@@ -9,6 +9,7 @@ from absl import app, flags
 from ml_collections import config_flags
 from tensorboardX import SummaryWriter
 
+from env_client import RemoteRLBenchEnv
 import wrappers
 from dataset_utils import D4RLDataset, RLBenchDataset, split_into_trajectories
 from evaluation import evaluate
@@ -57,18 +58,17 @@ def normalize(dataset):
     dataset.rewards *= 1000.0
 
 
-def make_env_and_dataset(env_name: str, seed: int) -> Tuple[gym.Env, D4RLDataset]:
+def make_env_and_dataset(env_name: str, seed: int, is_d4rl: bool) -> Tuple[gym.Env, D4RLDataset | RLBenchDataset]:
     # NOTE I think this has to be before making env
     np.random.seed(seed)
     random.seed(seed)
-    env = gym.make(env_name, seed=seed)
 
-
-    # dataset = D4RLDataset(env)
-    dataset = RLBenchDataset('test_data.npy')
-
-    env.action_space = dataset.action_space
-    env.observation_space = dataset.observation_space
+    if is_d4rl:
+        env = gym.make(env_name, seed=seed)
+        dataset = D4RLDataset(env)
+    else:
+        dataset = RLBenchDataset('test_data.npy')
+        env = RemoteRLBenchEnv()
 
     env = wrappers.EpisodeMonitor(env)
     env = wrappers.SinglePrecision(env)
@@ -106,7 +106,17 @@ def main(_):
     )
     os.makedirs(FLAGS.save_dir, exist_ok=True)
 
-    env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed)
+    if ("antmaze" in FLAGS.env_name
+        or "halfcheetah" in FLAGS.env_name
+        or "walker2d" in FLAGS.env_name
+        or "hopper" in FLAGS.env_name
+    ):
+        is_d4rl = True
+    else:
+        is_d4rl = False
+
+
+    env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed, is_d4rl)
 
     kwargs = dict(FLAGS.config)
     agent = Learner(
@@ -133,18 +143,18 @@ def main(_):
                     summary_writer.add_histogram(f"training/{k}", v, i)
             summary_writer.flush()
 
-        # if i % FLAGS.eval_interval == 0:
-        #     eval_stats = evaluate(agent, env, FLAGS.eval_episodes)
-        #
-        #     for k, v in eval_stats.items():
-        #         summary_writer.add_scalar(f'evaluation/average_{k}s', v, i)
-        #     summary_writer.flush()
-        #
-        #     eval_returns.append((i, eval_stats['return']))
-        #     np.savetxt(os.path.join(FLAGS.save_dir, f'{FLAGS.seed}.txt'),
-        #                eval_returns,
-        #                fmt=['%d', '%.1f'])
-        #
+        if i % FLAGS.eval_interval == 0:
+            eval_stats = evaluate(agent, env, FLAGS.eval_episodes)
+
+            for k, v in eval_stats.items():
+                summary_writer.add_scalar(f'evaluation/average_{k}s', v, i)
+            summary_writer.flush()
+
+            eval_returns.append((i, eval_stats['return']))
+            np.savetxt(os.path.join(FLAGS.save_dir, f'{FLAGS.seed}.txt'),
+                       eval_returns,
+                       fmt=['%d', '%.1f'])
+
 
 if __name__ == "__main__":
     app.run(main)

@@ -16,4 +16,5 @@ tensorflow-probability == 0.25.0
 protobuf == 3.20
 imageio >= 2.9.0
 imageio-ffmpeg >= 0.4.3
+pyzmq == 26.2.1
 d4rl @ git+https://github.com/rail-berkeley/d4rl@master#egg=d4rl

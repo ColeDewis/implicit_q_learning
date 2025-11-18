@@ -5,7 +5,6 @@ import d4rl
 import gym
 import numpy as np
 from tqdm import tqdm
-from gym.spaces import Box
 
 Batch = collections.namedtuple(
     'Batch',
@@ -114,8 +113,6 @@ class RLBenchDataset(Dataset):
             print(f"Error opening npy dataset: {e}")
             return
 
-        self.observation_space = Box(np_data.item().get('observation_space_low'), np_data.item().get('observation_space_high'), np_data.item().get('observation_space_shape').astype(int))
-        self.action_space = Box(np_data.item().get('action_space_low'), np_data.item().get('action_space_high'), np_data.item().get('action_space_shape').astype(int))
         dataset = {
             'observations': np.array(np_data.item().get('observations'), dtype=np.float32),
             'actions': np.array(np_data.item().get('actions'), dtype=np.float32),

@@ -13,7 +13,6 @@ def evaluate(agent: nn.Module, env: gym.Env,
         observation, done = env.reset(), False
 
         while not done:
-            action = agent.sample_actions(observation, temperature=0.0)
             observation, _, done, info = env.step(action)
 
         for k in stats.keys():
