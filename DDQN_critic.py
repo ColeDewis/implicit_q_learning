@@ -26,7 +26,7 @@ def get_max_actions_values(critic: Model, states: Tuple, num_actions: int):
 def update_v(critic: Model, value: Model, batch: Batch, max_action_values) -> Tuple[Model, InfoDict]:
     # actions = batch.actions
 
-    _, q = get_max_actions_values(critic, batch.observations, batch.actions.shape[1])
+    _, q = get_max_actions_values(critic, batch.next_observations, batch.actions.shape[1])
 
     
     def value_loss_fn(value_params: Params) -> Tuple[jnp.ndarray, InfoDict]:
@@ -61,12 +61,12 @@ def update_v(critic: Model, value: Model, batch: Batch, max_action_values) -> Tu
 def update_q(critic: Model, target_critic:Model, target_value: Model, batch: Batch,
              discount: float) -> Tuple[Model, InfoDict]:
     
-    max_actions, _ = get_max_actions_values(critic, batch.observations, batch.actions.shape[1])
+    max_actions, _ = get_max_actions_values(critic, batch.next_observations, batch.actions.shape[1])
 
     # next_actions, _ = get_max_actions_values(critic, batch.observations, action_dim, [0, 5])
 
     next_actions = max_actions
-    next_action_values = target_critic(batch.observations, next_actions)
+    next_action_values = target_critic(batch.next_observations, next_actions)
 
     target_q = batch.rewards + discount * batch.masks * next_action_values
 
