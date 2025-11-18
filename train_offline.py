@@ -29,6 +29,7 @@ flags.DEFINE_integer("batch_size", 256, "Mini batch size.")
 flags.DEFINE_integer("max_steps", int(1e6), "Number of training steps.")
 flags.DEFINE_boolean("tqdm", True, "Use tqdm progress bar.")
 flags.DEFINE_string("max_approx_method", "CEM", "Method to use for approximating max.")
+flags.DEFINE_float("tau", 0.8, "Controls how fast target networks are changed.")
 config_flags.DEFINE_config_file(
     "config",
     "default.py",
@@ -125,9 +126,6 @@ def main(_):
     #     **kwargs,
     # )
 
-    # TODO: Add this to the config
-    dtau = 0.8
-
     eval_returns = []
     for i in tqdm.tqdm(
         range(1, FLAGS.max_steps + 1), smoothing=0.1, disable=not FLAGS.tqdm
@@ -139,12 +137,7 @@ def main(_):
         # update target
         # TODO: Add target update freq to config
         # TODO: Add flag to config to select for DDQN or IQL
-        if i % 10 == 0:
-            tau = dtau
-        # Do no updates to target
-        else:
-            tau = 0
-        update_info = agent.update(batch, tau)
+        update_info = agent.update(batch, FLAGS.tau)
 
         if i % FLAGS.log_interval == 0:
             for k, v in update_info.items():
