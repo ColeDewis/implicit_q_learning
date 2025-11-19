@@ -38,7 +38,7 @@ def get_max_actions_values_AC(actor: Model, critic: Model, states: jnp.ndarray, 
     return mode_actions, mode_action_values
 
 def get_max_actions_values_CEM(critic: Model, states: Tuple, num_actions: int, CEM_rng: PRNGKey):
-    cem = CEM(critic, d=num_actions, maxits=1, N=1, Ne=1, rand_key=CEM_rng)
+    cem = CEM(critic, d=num_actions, maxits=2, N=10, Ne=5, rand_key=CEM_rng)
 
     best_actions = jnp.array([cem.eval(state) for state in states])
     q_values = critic(states, best_actions)
