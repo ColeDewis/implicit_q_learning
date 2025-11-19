@@ -17,6 +17,7 @@ from DDQN_critic import update_q, update_v
 from functools import partial
 
 from max_approx.CrossEntropy import CEM 
+from max_approx.GradientAscent import ActionGradientAscent
 
 # fmt: off
 
@@ -29,11 +30,12 @@ def target_update(critic: Model, target_critic: Model, tau: float) -> Model:
 
 # TODO: Also need to try CEM, gradient ascent. Also, should try sampling action rather than
 # mode possibly.
-def get_max_actions_values_AC(actor: Model, critic: Model, states: jnp.ndarray, temperature: float):
-    mode_actions = policy.sample_actions_deterministic(actor.apply_fn,
-                                             actor.params, states,
-                                             temperature)
-    mode_action_values = critic.apply({'params': critic.params}, states, mode_actions)
+def get_max_actions_values_AC(critic: Model, states: jnp.ndarray, action_dim: int, action_range: Tuple[float, float] = (-1.0, 1.0)):
+
+    grad_ascent = ActionGradientAscent(critic, action_dim) # Can modify the max iterations, the action range, and gradient ascent step size.
+
+    best_actions, q_values = jax.vmap(grad_ascent.eval)(states) # i don't know if vmap works here
+    return best_actions, q_values
 
     return mode_actions, mode_action_values
 
@@ -62,7 +64,7 @@ def _update_jit(
         CEM_rng, rng = jax.random.split(rng)
         max_actions, max_action_values = get_max_actions_values_CEM(critic, batch.next_observations, batch.actions.shape[1], CEM_rng)
     elif max_approx_method == "AC":
-        max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, temperature)
+        max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, batch.actions.shape[1],)
 
 
     new_value, value_info = update_v(target_critic, value, batch, max_action_values)
