@@ -21,6 +21,7 @@ from max_approx.GradientAscent import ActionGradientAscent
 
 # fmt: off
 
+# TODO: add the AC stuff back in, and then udpate to include the AGA stuff
 def target_update(critic: Model, target_critic: Model, tau: float) -> Model:
     new_target_params = jax.tree_util.tree_map(
         lambda p, tp: p * tau + tp * (1 - tau), critic.params,
