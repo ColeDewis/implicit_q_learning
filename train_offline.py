@@ -11,7 +11,6 @@ from tensorboardX import SummaryWriter
 
 import wrappers
 from dataset_utils import D4RLDataset, split_into_trajectories
-from DDQN_learner import DDQNLearner
 from evaluation import evaluate
 from learner import Learner
 from DDQN_learner import DDQNLearner
@@ -29,7 +28,8 @@ flags.DEFINE_integer("batch_size", 256, "Mini batch size.")
 flags.DEFINE_integer("max_steps", int(1e6), "Number of training steps.")
 flags.DEFINE_boolean("tqdm", True, "Use tqdm progress bar.")
 flags.DEFINE_string("max_approx_method", "CEM", "Method to use for approximating max.")
-flags.DEFINE_float("tau", 0.8, "Controls how fast target networks are changed.")
+# flags.DEFINE_float("tau", 0.8, "Controls how fast target networks are changed.")
+flags.DEFINE_string("learner", "IQL", "Learning algorithm to use ('IQL' or 'DDQN').")
 config_flags.DEFINE_config_file(
     "config",
     "default.py",
@@ -110,21 +110,27 @@ def main(_):
     env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed)
 
     kwargs = dict(FLAGS.config)
-    agent = DDQNLearner(
-        FLAGS.seed,
-        env.observation_space.sample()[np.newaxis],
-        env.action_space.sample()[np.newaxis],
-        max_steps=FLAGS.max_steps,
-        max_approx_method=FLAGS.max_approx_method,
-        **kwargs,
-    )
-    # agent = Learner(
-    #     FLAGS.seed,
-    #     env.observation_space.sample()[np.newaxis],
-    #     env.action_space.sample()[np.newaxis],
-    #     max_steps=FLAGS.max_steps,
-    #     **kwargs,
-    # )
+    if FLAGS.learner == "DDQN":
+        save_file_name = f"{FLAGS.learner}_{FLAGS.max_approx_method}_{FLAGS.seed}.txt"
+        agent = DDQNLearner(
+            FLAGS.seed,
+            env.observation_space.sample()[np.newaxis],
+            env.action_space.sample()[np.newaxis],
+            max_steps=FLAGS.max_steps,
+            max_approx_method=FLAGS.max_approx_method,
+            **kwargs,
+        )
+    elif FLAGS.learner == "IQL":
+        save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
+        agent = Learner(
+            FLAGS.seed,
+            env.observation_space.sample()[np.newaxis],
+            env.action_space.sample()[np.newaxis],
+            max_steps=FLAGS.max_steps,
+            **kwargs,
+        )
+    else:
+        assert(f"Learner {FLAGS.learner} is not implemented")
 
     eval_returns = []
     for i in tqdm.tqdm(
@@ -132,12 +138,8 @@ def main(_):
     ):
         batch = dataset.sample(FLAGS.batch_size)
 
-        # update_info = agent.update(batch)
-
         # update target
-        # TODO: Add target update freq to config
-        # TODO: Add flag to config to select for DDQN or IQL
-        update_info = agent.update(batch, FLAGS.tau)
+        update_info = agent.update(batch)
 
         if i % FLAGS.log_interval == 0:
             for k, v in update_info.items():
@@ -156,7 +158,7 @@ def main(_):
 
             eval_returns.append((i, eval_stats["return"]))
             np.savetxt(
-                os.path.join(FLAGS.save_dir, f"{FLAGS.seed}.txt"),
+                os.path.join(FLAGS.save_dir, save_file_name),
                 eval_returns,
                 fmt=["%d", "%.1f"],
             )

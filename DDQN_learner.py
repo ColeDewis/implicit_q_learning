@@ -166,10 +166,10 @@ class DDQNLearner(object):
         actions = np.asarray(actions)
         return np.clip(actions, -1, 1)
 
-    def update(self, batch: Batch, tau: float) -> InfoDict:
+    def update(self, batch: Batch) -> InfoDict:
         new_rng, new_actor, new_critic, new_value, new_target_critic, info = _update_jit(
             self.rng, self.actor, self.critic, self.value, self.target_critic,
-            batch, self.discount, tau, self.temperature, self.max_approx_method)
+            batch, self.discount, self.tau, self.temperature, self.max_approx_method)
 
         self.rng = new_rng
         self.actor = new_actor
