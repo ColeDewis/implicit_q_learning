@@ -24,7 +24,7 @@ class RemoteRLBenchEnv(gym.Env):
 
     def step(self, action):
         self.socket.send_pyobj({'cmd': 'step', 'action': action})
-        obs, reward, terminated, truncated, info = self.socket.recv_pyobj()        
+        obs, reward, terminated, info = self.socket.recv_pyobj()        
 
         return obs, reward, terminated, info
 
