@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Example usage:
-# sbatch --export=path="$(pwd)" multijob.sh 3 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 01:40:00
+# sbatch --export=path="$(pwd)" multijob.sh 3 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 01:40:00 antmaze_config.py 100000
 
 # Set the step size dynamically (first argument)
-STEP_SIZE=${1:-3}  # Default to 3 if not provided
+STEP_SIZE=${1:-2}  # Default to 2 if not provided
 
 # Set the environment name (second argument)
 ENV_NAME=${2:-antmaze-large-play-v0}  # Default to "antmaze-large-play-v0" if not provided
@@ -15,7 +15,13 @@ DATASET_NAME=${3:-Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sp
 # Set the job time dynamically (fourth argument)
 JOB_TIME=${4:-01:40:00}  # Default to "01:40:00" if not provided
 
-#SBATCH --array=1-15:${STEP_SIZE}
+# Set the config name dynamically (fifth argument)
+CONFIG_NAME=${5:-antmaze_config.py}  # Default to "antmaze_config.py" if not provided
+
+# Set the evaluation interval dynamically (sixth argument)
+EVAL_INTERVAL=${6:-100000}  # Default to 100000 if not provided
+
+#SBATCH --array=1-10:${STEP_SIZE}
 #SBATCH --time=${JOB_TIME}
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=a100_3g.20gb:1
@@ -49,6 +55,6 @@ mkdir -p $RESULTS_DIR
 # Training loop for multiple seeds
 for ((i=0; i<STEP_SIZE; i++)); do
     SEED=$((SLURM_ARRAY_TASK_ID + i))
-    python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/antmaze_config.py --eval_episodes=100 --eval_interval=100000 --seed=$SEED
+    python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED
     cp ./tmp/${SEED}.txt $RESULTS_DIR
 done
