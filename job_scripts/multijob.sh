@@ -5,19 +5,26 @@
 #SBATCH --cpus-per-task=3
 
 # Example usage:
-# sbatch --time=01:00:00 --array=1-10:2 --export=path="$(pwd)" job_scripts/multijob.sh antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 antmaze_config.py 100000
+# sbatch --time=01:00:00 --array=1-10:2 --export=path="$(pwd)" job_scripts/multijob.sh 2 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 antmaze_config.py 100000
+# Note that you MUST pass consistent datasets and environment names, and the number
+# (step size) after the script name must match the array step size.
+# Run this from the root repository folder.
 
-# Set the environment name (first argument)
-ENV_NAME=${1:-antmaze-large-play-v0}  # Default to "antmaze-large-play-v0" if not provided
 
-# Set the dataset name (second argument)
-DATASET_NAME=${2:-Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5}  # Default dataset
+# Set the step size dynamically (first argument)
+STEP_SIZE=${1:-2}  # Default to 2 if not provided
 
-# Set the config name (third argument)
-CONFIG_NAME=${3:-antmaze_config.py}  # Default to "antmaze_config.py" if not provided
+# Set the environment name (second argument)
+ENV_NAME=${2:-antmaze-large-play-v0}  # Default to "antmaze-large-play-v0" if not provided
 
-# Set the evaluation interval (fourth argument)
-EVAL_INTERVAL=${4:-100000}  # Default to 100000 if not provided
+# Set the dataset name (third argument)
+DATASET_NAME=${3:-Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5}  # Default dataset
+
+# Set the config name dynamically (fourth argument)
+CONFIG_NAME=${4:-antmaze_config.py}  # Default to "antmaze_config.py" if not provided
+
+# Set the evaluation interval dynamically (fifth argument)
+EVAL_INTERVAL=${5:-100000}  # Default to 100000 if not provided
 
 # Load required modules
 module load python/3.10
