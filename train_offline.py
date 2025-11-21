@@ -32,6 +32,9 @@ config_flags.DEFINE_config_file(
     "File path to the training hyperparameter configuration.",
     lock_config=False,
 )
+flags.DEFINE_list(
+    "overrides", None, "List of hyperparameter overrides in the format key=value."
+)
 
 
 def normalize(dataset):
@@ -79,8 +82,11 @@ def make_env_and_dataset(env_name: str, seed: int, is_d4rl: bool) -> Tuple[gym.E
     # see: https://github.com/Farama-Foundation/D4RL/issues/202
     # here we directly pull out the AntMazeEnv to call its seed method.
     if "antmaze" in FLAGS.env_name:
-        # NOTE: this might need one more .env if you're not on compute canada.
-        env.env.env.env._wrapped_env.seed(seed)
+        # TODO test on cc.
+        tempenv = env
+        while hasattr(tempenv, "env"):
+            tempenv = tempenv.env
+        tempenv._wrapped_env.seed(seed)
 
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
@@ -98,6 +104,21 @@ def make_env_and_dataset(env_name: str, seed: int, is_d4rl: bool) -> Tuple[gym.E
         normalize(dataset)
 
     return env, dataset
+
+
+def apply_overrides(config, overrides):
+    """Apply a list of key=value overrides to the config."""
+    if overrides:
+        for override in overrides:
+            key, value = override.split("=")
+            # Convert value to the appropriate type
+            if value.isdigit():
+                value = int(value)
+            elif value.replace(".", "", 1).isdigit():
+                value = float(value)
+            elif value.lower() in ["true", "false"]:
+                value = value.lower() == "true"
+            config[key] = value
 
 
 def main(_):
@@ -119,6 +140,7 @@ def main(_):
     env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed, is_d4rl)
 
     kwargs = dict(FLAGS.config)
+    apply_overrides(kwargs, FLAGS.overrides)
     agent = Learner(
         FLAGS.seed,
         env.observation_space.sample()[np.newaxis],
