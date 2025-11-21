@@ -14,7 +14,8 @@ Batch = collections.namedtuple(
 
 
 def default_init(scale: Optional[float] = jnp.sqrt(2)):
-    return nn.initializers.orthogonal(scale)
+    # return nn.initializers.orthogonal(scale)
+    return nn.initializers.glorot_uniform()
 
 
 PRNGKey = Any

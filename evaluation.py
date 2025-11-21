@@ -12,9 +12,18 @@ def evaluate(agent: nn.Module, env: gym.Env,
     for _ in range(num_episodes):
         observation, done = env.reset(), False
 
+        i = 0
         while not done:
+            print(observation)
+            action = agent.sample_actions(observation, temperature=0.0)
             observation, _, done, info = env.step(action)
 
+            if i > 500:
+                done = True
+
+            i += 1
+
+        print(info)
         for k in stats.keys():
             stats[k].append(info['episode'][k])
 

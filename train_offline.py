@@ -67,7 +67,7 @@ def make_env_and_dataset(env_name: str, seed: int, is_d4rl: bool) -> Tuple[gym.E
         env = gym.make(env_name, seed=seed)
         dataset = D4RLDataset(env)
     else:
-        dataset = RLBenchDataset('test_data.npy')
+        dataset = RLBenchDataset('reach_data.npy')
         env = RemoteRLBenchEnv()
 
     env = wrappers.EpisodeMonitor(env)
