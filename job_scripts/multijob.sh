@@ -1,32 +1,25 @@
 #!/bin/bash
-
-# Example usage:
-# sbatch --export=path="$(pwd)" multijob.sh 3 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 01:40:00 antmaze_config.py 100000
-
-# Set the step size dynamically (first argument)
-STEP_SIZE=${1:-2}  # Default to 2 if not provided
-
-# Set the environment name (second argument)
-ENV_NAME=${2:-antmaze-large-play-v0}  # Default to "antmaze-large-play-v0" if not provided
-
-# Set the dataset name (third argument)
-DATASET_NAME=${3:-Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5}  # Default dataset
-
-# Set the job time dynamically (fourth argument)
-JOB_TIME=${4:-01:40:00}  # Default to "01:40:00" if not provided
-
-# Set the config name dynamically (fifth argument)
-CONFIG_NAME=${5:-antmaze_config.py}  # Default to "antmaze_config.py" if not provided
-
-# Set the evaluation interval dynamically (sixth argument)
-EVAL_INTERVAL=${6:-100000}  # Default to 100000 if not provided
-
 #SBATCH --array=1-10:${STEP_SIZE}
 #SBATCH --time=${JOB_TIME}
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=a100_3g.20gb:1
 #SBATCH --mem=8G
 #SBATCH --cpus-per-task=3
+
+# Example usage:
+# sbatch --export=STEP_SIZE=2,JOB_TIME=01:40:00,path="$(pwd)" multijob.sh antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 antmaze_config.py 100000
+
+# Set the environment name (first argument)
+ENV_NAME=${1:-antmaze-large-play-v0}  # Default to "antmaze-large-play-v0" if not provided
+
+# Set the dataset name (second argument)
+DATASET_NAME=${2:-Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5}  # Default dataset
+
+# Set the config name (third argument)
+CONFIG_NAME=${3:-antmaze_config.py}  # Default to "antmaze_config.py" if not provided
+
+# Set the evaluation interval (fourth argument)
+EVAL_INTERVAL=${4:-100000}  # Default to 100000 if not provided
 
 # Load required modules
 module load python/3.10
