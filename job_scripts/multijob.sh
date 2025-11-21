@@ -1,13 +1,11 @@
 #!/bin/bash
-#SBATCH --array=1-10:${STEP_SIZE}
-#SBATCH --time=${JOB_TIME}
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=a100_3g.20gb:1
 #SBATCH --mem=8G
 #SBATCH --cpus-per-task=3
 
 # Example usage:
-# sbatch --export=STEP_SIZE=2,JOB_TIME=01:40:00,path="$(pwd)" multijob.sh antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 antmaze_config.py 100000
+# sbatch --time=01:00:00 --array=1-10:2 --export=path="$(pwd)" job_scripts/multijob.sh antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 antmaze_config.py 100000
 
 # Set the environment name (first argument)
 ENV_NAME=${1:-antmaze-large-play-v0}  # Default to "antmaze-large-play-v0" if not provided
