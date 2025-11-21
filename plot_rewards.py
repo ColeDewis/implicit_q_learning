@@ -35,10 +35,8 @@ def aggregate_data_across_seeds(folder_path):
 
 def main():
     # Hardcoded folder path
-    IQL_FOLDER_PATH = (
-        "/home/coled/655/implicit_q_learning/results/IQL/halfcheetah_medium_expert"
-    )
-    steps, iql_rewards = aggregate_data_across_seeds(IQL_FOLDER_PATH)
+    IQL_FOLDER_PATH = "/home/coled/655/implicit_q_learning/results/IQL/Ant_maze_hardest_noisy_multistart"
+    steps, rewards = aggregate_data_across_seeds(IQL_FOLDER_PATH)
 
     iql_mean_rewards = np.mean(iql_rewards, axis=0)
     iql_min_rewards = np.min(iql_rewards, axis=0)
@@ -62,7 +60,7 @@ def main():
         ddqn_mean_rewards = np.mean(ddqn_rewards, axis=0)
         ddqn_min_rewards = np.min(ddqn_rewards, axis=0)
         ddqn_max_rewards = np.max(ddqn_rewards, axis=0)
-        plt.plot(steps, ddqn_mean_rewards, label="DDQN", color="orange")
+        plt.plot(steps, ddqn_mean_rewards, label="DDQN A/C", color="orange")
         plt.fill_between(
             steps,
             ddqn_min_rewards,

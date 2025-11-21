@@ -8,6 +8,7 @@ venv310/
 tmp/
 venv/
 results/
+test.py
 
 # C extensions
 *.so

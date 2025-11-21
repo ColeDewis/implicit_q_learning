@@ -86,7 +86,7 @@ Narval: `#SBATCH --gpus-per-node=a100_3g.20gb:1`
 
 The test job does require the dataset to already be on the compute canada server. You can download in advance from here: https://huggingface.co/datasets/imone/D4RL/tree/main, since I think it's better to get the dataset in advance rather than having your job download it. You need `Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5`. Put it in a folder `~/.d4rl/datasets/` by copying it to the cluster with `scp`.
 
-Run the test job with `sbatch --export=path="$(pwd)" test_job.sh`. 
+Run the test job with `sbatch --export=path="$(pwd)" job_scripts/test_job.sh`. 
 
 
 ### Notes about this setup
