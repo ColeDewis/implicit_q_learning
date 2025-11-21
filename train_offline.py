@@ -13,6 +13,8 @@ import wrappers
 from dataset_utils import D4RLDataset, split_into_trajectories
 from evaluation import evaluate
 from learner import Learner
+from DDQN_learner import DDQNLearner
+import jax
 
 FLAGS = flags.FLAGS
 
@@ -25,6 +27,9 @@ flags.DEFINE_integer("eval_interval", 5000, "Eval interval.")
 flags.DEFINE_integer("batch_size", 256, "Mini batch size.")
 flags.DEFINE_integer("max_steps", int(1e6), "Number of training steps.")
 flags.DEFINE_boolean("tqdm", True, "Use tqdm progress bar.")
+flags.DEFINE_string("max_approx_method", "CEM", "Method to use for approximating max.")
+# flags.DEFINE_float("tau", 0.8, "Controls how fast target networks are changed.")
+flags.DEFINE_string("learner", "IQL", "Learning algorithm to use ('IQL' or 'DDQN').")
 config_flags.DEFINE_config_file(
     "config",
     "default.py",
@@ -34,7 +39,6 @@ config_flags.DEFINE_config_file(
 flags.DEFINE_list(
     "overrides", None, "List of hyperparameter overrides in the format key=value."
 )
-
 
 def normalize(dataset):
 
@@ -116,6 +120,7 @@ def apply_overrides(config, overrides):
 
 
 def main(_):
+    print(f"JAX default backend: {jax.default_backend()}")
     summary_writer = SummaryWriter(
         os.path.join(FLAGS.save_dir, "tb", str(FLAGS.seed)), write_to_disk=True
     )
@@ -125,13 +130,27 @@ def main(_):
 
     kwargs = dict(FLAGS.config)
     apply_overrides(kwargs, FLAGS.overrides)
-    agent = Learner(
-        FLAGS.seed,
-        env.observation_space.sample()[np.newaxis],
-        env.action_space.sample()[np.newaxis],
-        max_steps=FLAGS.max_steps,
-        **kwargs,
-    )
+    if FLAGS.learner == "DDQN":
+        save_file_name = f"{FLAGS.learner}_{FLAGS.max_approx_method}_{FLAGS.seed}.txt"
+        agent = DDQNLearner(
+            FLAGS.seed,
+            env.observation_space.sample()[np.newaxis],
+            env.action_space.sample()[np.newaxis],
+            max_steps=FLAGS.max_steps,
+            max_approx_method=FLAGS.max_approx_method,
+            **kwargs,
+        )
+    elif FLAGS.learner == "IQL":
+        save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
+        agent = Learner(
+            FLAGS.seed,
+            env.observation_space.sample()[np.newaxis],
+            env.action_space.sample()[np.newaxis],
+            max_steps=FLAGS.max_steps,
+            **kwargs,
+        )
+    else:
+        assert(f"Learner {FLAGS.learner} is not implemented")
 
     eval_returns = []
     for i in tqdm.tqdm(
@@ -139,6 +158,7 @@ def main(_):
     ):
         batch = dataset.sample(FLAGS.batch_size)
 
+        # update target
         update_info = agent.update(batch)
 
         if i % FLAGS.log_interval == 0:
@@ -158,7 +178,7 @@ def main(_):
 
             eval_returns.append((i, eval_stats["return"]))
             np.savetxt(
-                os.path.join(FLAGS.save_dir, f"{FLAGS.seed}.txt"),
+                os.path.join(FLAGS.save_dir, save_file_name),
                 eval_returns,
                 fmt=["%d", "%.1f"],
             )

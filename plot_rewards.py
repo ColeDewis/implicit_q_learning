@@ -38,14 +38,19 @@ def main():
     IQL_FOLDER_PATH = "/home/coled/655/implicit_q_learning/results/IQL/Ant_maze_hardest_noisy_multistart"
     steps, rewards = aggregate_data_across_seeds(IQL_FOLDER_PATH)
 
-    mean_rewards = np.mean(rewards, axis=0)
-    min_rewards = np.min(rewards, axis=0)
-    max_rewards = np.max(rewards, axis=0)
+    iql_mean_rewards = np.mean(iql_rewards, axis=0)
+    iql_min_rewards = np.min(iql_rewards, axis=0)
+    iql_max_rewards = np.max(iql_rewards, axis=0)
 
     plt.figure(figsize=(10, 6))
-    plt.plot(steps, mean_rewards, label="IQL", color="blue")
+    plt.plot(steps, iql_mean_rewards, label="IQL", color="blue")
     plt.fill_between(
-        steps, min_rewards, max_rewards, color="blue", alpha=0.2, label="Min/Max Range"
+        steps,
+        iql_min_rewards,
+        iql_max_rewards,
+        color="blue",
+        alpha=0.2,
+        label="Min/Max Range",
     )
 
     DDQN_FOLDER_PATH = IQL_FOLDER_PATH.replace("IQL", "DDQN")
