@@ -30,7 +30,7 @@ class CEM():
     assert sampleMethod=='Gaussian' or sampleMethod=='Uniform'
     self.sampleMethod = sampleMethod  # which sample method gaussian or uniform, default to gaussian
 
-    print(f"USING {maxits} ITERATIONS {'#'*50}")
+    print(f"USING {maxits} ITERATIONS, {N} SAMPLES, AND SAMPLING FROM {sampleMethod} DISTRIBUTION")
 
     self.rand_key = rand_key
     if rand_key is None:
@@ -101,7 +101,13 @@ class CEM():
     for j in range(self.d):
       # sample_matrix[:,j] = jax.random.normal(loc=mu[j], scale=sigma[j]+1e-17, size=(self.N,))
       
-      rand_norm = jax.random.multivariate_normal(key=self.rand_key, mean=jnp.array([mu[j]]), cov=jnp.array([[sigma[j]+1e-17]]), shape=(self.N,))
+      # rand_norm = jax.random.multivariate_normal(key=self.rand_key, mean=jnp.array([mu[j]]), cov=jnp.array([[sigma[j]+1e-17]]), shape=(self.N,))
+      rand_norm = jax.random.normal(key=self.rand_key, shape=(self.N,))
+
+      std = jnp.array([[sigma[j]+1e-17]])
+      # reparam trick
+      rand_norm = jnp.array([mu[j]]) + jnp.sqrt(std[0, 0]) * rand_norm
+
       sample_matrix = sample_matrix.at[:,j].set(rand_norm.reshape(-1))
       if self.v_min is not None and self.v_max is not None:
         sample_matrix.at[:,j].set(jnp.clip(sample_matrix[:,j], self.v_min[j], self.v_max[j]))
