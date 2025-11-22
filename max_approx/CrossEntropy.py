@@ -16,7 +16,7 @@ from common import Model
 
 
 class CEM():
-  def __init__(self, func, d, maxits=500, N=100, Ne=10, argmin=False, v_min=None, v_max=None, init_scale=1, sampleMethod='Uniform', rand_key=None):
+  def __init__(self, func, d, maxits=2, N=10, Ne=5, argmin=False, v_min=None, v_max=None, init_scale=1, sampleMethod='Uniform', rand_key=None):
     self.func = func                  # target function
     self.d = d                        # dimension of function input X
     self.maxits = maxits              # maximum iteration

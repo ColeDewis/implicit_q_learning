@@ -21,7 +21,6 @@ from max_approx.GradientAscent import ActionGradientAscent
 
 # fmt: off
 
-# TODO: add the AC stuff back in, and then udpate to include the AGA stuff
 def target_update(critic: Model, target_critic: Model, tau: float) -> Model:
     new_target_params = jax.tree_util.tree_map(
         lambda p, tp: p * tau + tp * (1 - tau), critic.params,
@@ -29,8 +28,7 @@ def target_update(critic: Model, target_critic: Model, tau: float) -> Model:
 
     return target_critic.replace(params=new_target_params)
 
-# TODO: Also need to try CEM, gradient ascent. Also, should try sampling action rather than
-# mode possibly.
+# TODO: should try sampling action rather than mode possibly.
 def get_max_actions_values_AC(actor: Model, critic: Model, states: jnp.ndarray, temperature: float):
     mode_actions = policy.sample_actions_deterministic(actor.apply_fn, actor.params, states, temperature)
 
@@ -55,11 +53,11 @@ def get_max_actions_values_CEM(critic: Model, states: Tuple, num_actions: int, C
 
 
 # @jax.jit
-@partial(jax.jit, static_argnames=['max_approx_method'])
+@partial(jax.jit, static_argnames=['max_approx_method', "max_approx_hypers"])
 def _update_jit(
     rng: PRNGKey, actor: Model, critic: Model, value: Model,
     target_critic: Model, batch: Batch, discount: float, tau: float,
-    temperature: float, max_approx_method:str
+    temperature: float, max_approx_method:str, max_approx_hypers: dict
 ) -> Tuple[PRNGKey, Model, Model, Model, Model, Model, InfoDict]:
 
     key, rng = jax.random.split(rng)
@@ -68,11 +66,11 @@ def _update_jit(
     if max_approx_method == "CEM":
         # TODO: not sure if this messes with other rand seeds later, or if that even matters
         CEM_rng, rng = jax.random.split(rng)
-        max_actions, max_action_values = get_max_actions_values_CEM(critic, batch.next_observations, batch.actions.shape[1], CEM_rng)
+        max_actions, max_action_values = get_max_actions_values_CEM(critic, batch.next_observations, batch.actions.shape[1], CEM_rng, **max_approx_hypers)
     elif max_approx_method == "AC":
-        max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, temperature)
+        max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, temperature, **max_approx_hypers)
     elif max_approx_method == "GA":
-        max_actions, max_action_values = get_max_actions_values_GA(critic, batch.next_observations, batch.actions.shape[1])
+        max_actions, max_action_values = get_max_actions_values_GA(critic, batch.next_observations, batch.actions.shape[1], **max_approx_hypers)
 
 
     new_value, value_info = update_v(target_critic, value, batch, max_action_values)
@@ -110,7 +108,8 @@ class DDQNLearner(object):
                  dropout_rate: Optional[float] = None,
                  max_steps: Optional[int] = None,
                  opt_decay_schedule: str = "cosine", 
-                 max_approx_method: str = "CEM"):
+                 max_approx_method: str = "CEM",
+                 max_approx_hypers: dict = {}):
         """
         An implementation of the version of Soft-Actor-Critic described in https://arxiv.org/abs/1801.01290
         """
@@ -163,6 +162,7 @@ class DDQNLearner(object):
         self.action_space = actions
         self.action_dim = action_dim
         self.max_approx_method = max_approx_method
+        self.max_approx_hypers = max_approx_hypers
 
 
     def sample_actions(self,
@@ -179,7 +179,7 @@ class DDQNLearner(object):
     def update(self, batch: Batch) -> InfoDict:
         new_rng, new_actor, new_critic, new_value, new_target_critic, info = _update_jit(
             self.rng, self.actor, self.critic, self.value, self.target_critic,
-            batch, self.discount, self.tau, self.temperature, self.max_approx_method)
+            batch, self.discount, self.tau, self.temperature, self.max_approx_method, self.max_approx_hypers)
 
         self.rng = new_rng
         self.actor = new_actor
