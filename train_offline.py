@@ -137,7 +137,6 @@ def main(_):
             env.observation_space.sample()[np.newaxis],
             env.action_space.sample()[np.newaxis],
             max_steps=FLAGS.max_steps,
-            max_approx_method=FLAGS.max_approx_method,
             **kwargs,
         )
     elif FLAGS.learner == "IQL":

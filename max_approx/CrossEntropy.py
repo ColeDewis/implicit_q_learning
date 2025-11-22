@@ -30,6 +30,8 @@ class CEM():
     assert sampleMethod=='Gaussian' or sampleMethod=='Uniform'
     self.sampleMethod = sampleMethod  # which sample method gaussian or uniform, default to gaussian
 
+    print(f"USING {maxits} ITERATIONS {'#'*50}")
+
     self.rand_key = rand_key
     if rand_key is None:
       self.rand_key = jax.random.PRNGKey(0)

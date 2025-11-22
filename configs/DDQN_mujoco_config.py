@@ -19,11 +19,11 @@ def get_config():
     config.tau = 0.005  # For soft target updates.
 
     config.max_approx_method = "CEM"
-    config.max_approx_hypers = {
-        "maxits":20,
-        "N":20,
-        "Ne":10
-    }
+    config.max_approx_hypers = (
+        ("maxits", 20),
+        ("N", 20),
+        ("Ne", 10)
+    )
 
 
     return config

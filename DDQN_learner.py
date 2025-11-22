@@ -43,8 +43,8 @@ def get_max_actions_values_GA(critic: Model, states: jnp.ndarray, action_dim: in
     best_actions, q_values = jax.vmap(grad_ascent.eval)(states) # i don't know if vmap works here
     return best_actions, q_values
 
-def get_max_actions_values_CEM(critic: Model, states: Tuple, num_actions: int, CEM_rng: PRNGKey):
-    cem = CEM(critic, d=num_actions, maxits=2, N=10, Ne=5, rand_key=CEM_rng)
+def get_max_actions_values_CEM(critic: Model, states: Tuple, num_actions: int, CEM_rng: PRNGKey, CEM_hypers: dict):
+    cem = CEM(critic, d=num_actions, rand_key=CEM_rng, **CEM_hypers)
 
     best_actions = jnp.array([cem.eval(state) for state in states])
     q_values = critic(states, best_actions)
@@ -57,20 +57,21 @@ def get_max_actions_values_CEM(critic: Model, states: Tuple, num_actions: int, C
 def _update_jit(
     rng: PRNGKey, actor: Model, critic: Model, value: Model,
     target_critic: Model, batch: Batch, discount: float, tau: float,
-    temperature: float, max_approx_method:str, max_approx_hypers: dict
+    temperature: float, max_approx_method:str, max_approx_hypers: tuple
 ) -> Tuple[PRNGKey, Model, Model, Model, Model, Model, InfoDict]:
 
     key, rng = jax.random.split(rng)
+    max_approx_hypers = dict(max_approx_hypers)
 
     # TODO: not sure whether to use critic or target critic here to be "more correct"
     if max_approx_method == "CEM":
         # TODO: not sure if this messes with other rand seeds later, or if that even matters
         CEM_rng, rng = jax.random.split(rng)
-        max_actions, max_action_values = get_max_actions_values_CEM(critic, batch.next_observations, batch.actions.shape[1], CEM_rng, **max_approx_hypers)
+        max_actions, max_action_values = get_max_actions_values_CEM(critic, batch.next_observations, batch.actions.shape[1], CEM_rng, max_approx_hypers)
     elif max_approx_method == "AC":
-        max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, temperature, **max_approx_hypers)
+        max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, temperature, max_approx_hypers)
     elif max_approx_method == "GA":
-        max_actions, max_action_values = get_max_actions_values_GA(critic, batch.next_observations, batch.actions.shape[1], **max_approx_hypers)
+        max_actions, max_action_values = get_max_actions_values_GA(critic, batch.next_observations, batch.actions.shape[1], max_approx_hypers)
 
 
     new_value, value_info = update_v(target_critic, value, batch, max_action_values)
