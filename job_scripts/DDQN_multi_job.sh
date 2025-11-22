@@ -59,7 +59,7 @@ CONFIG=${CONFIGS[$SLURM_ARRAY_TASK_ID]}
 # Training loop for multiple seeds per hyperparameter
 for ((i=0; i<NUM_SEEDS; i++)); do
     SEED=$i  # Start seeds at 0
-    python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --max_steps=100 --eval_episodes=100 --eval_interval=100000 --seed=$SEED --MAX_APPROX_METHOD=$MAX_APPROX_METHOD
+    python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --max_steps=100 --eval_episodes=100 --eval_interval=100000 --seed=$SEED --learner=DDQN
     RESULT_FILE=$RESULTS_DIR/seed${SEED}-env=${ENV_NAME}-hypers=${CONFIG}.txt
     cp ./tmp/${SEED}_${SLURM_ARRAY_TASK_ID}.txt $RESULT_FILE
 done

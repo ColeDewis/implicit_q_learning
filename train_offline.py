@@ -130,8 +130,9 @@ def main(_):
 
     kwargs = dict(FLAGS.config)
     apply_overrides(kwargs, FLAGS.overrides)
+    save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
     if FLAGS.learner == "DDQN":
-        save_file_name = f"{FLAGS.learner}_{FLAGS.max_approx_method}_{FLAGS.seed}.txt"
+        # save_file_name = f"{FLAGS.learner}_{FLAGS.max_approx_method}_{FLAGS.seed}.txt"
         agent = DDQNLearner(
             FLAGS.seed,
             env.observation_space.sample()[np.newaxis],
@@ -140,7 +141,7 @@ def main(_):
             **kwargs,
         )
     elif FLAGS.learner == "IQL":
-        save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
+        # save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
         agent = Learner(
             FLAGS.seed,
             env.observation_space.sample()[np.newaxis],
