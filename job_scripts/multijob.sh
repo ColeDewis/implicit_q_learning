@@ -1,11 +1,14 @@
 #!/bin/bash
+#SBATCH --ntasks=1
+#SBATCH --gpus-per-node=a100_3g.20gb:1
+#SBATCH --mem=8G
+#SBATCH --cpus-per-task=3
 
 # Example usage:
 # sbatch --time=01:00:00 --array=1-10:2 --export=path="$(pwd)" job_scripts/multijob.sh 2 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 antmaze_config.py 100000
 # Note that you MUST pass consistent datasets and environment names, and the number
 # (step size) after the script name must match the array step size.
 # Run this from the root repository folder.
-
 
 # Set the step size dynamically (first argument)
 STEP_SIZE=${1:-2}  # Default to 2 if not provided
@@ -50,5 +53,6 @@ mkdir -p $RESULTS_DIR
 for ((i=0; i<STEP_SIZE; i++)); do
     SEED=$((SLURM_ARRAY_TASK_ID + i))
     python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED
-    cp ./tmp/${SEED}.txt $RESULTS_DIR
+
+    cp ./tmp/IQL_${SEED}.txt $RESULTS_DIR
 done
