@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=3
 
 # Example usage:
-# sbatch --time=00:30:00 --array=1-10:2 --export=path="$(pwd)" job_scripts/multijob.sh 2 rlbench microwave_data.h5 mujoco_config.py 100000
+# sbatch --time=00:30:00 --array=1-10:2 --export=path="$(pwd)" job_scripts/rlbench_multijob.sh 2 rlbench microwave_data.h5 mujoco_config.py 100000
 # Note that you MUST pass consistent datasets and environment names, and the number
 # (step size) after the script name must match the array step size.
 # Run this from the root repository folder.

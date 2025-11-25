@@ -62,8 +62,8 @@ msgpack==1.1.0+computecanada
 mujoco-py==1.50.1.68
 mujoco_mjx==3.1.6+computecanada
 nest_asyncio==1.6.0+computecanada
-nose==1.3.7+computecanada
-numpy==1.25.2+computecanada
+nose==1.3.7+computecanadacc
+numpy==1.25.2+computecanadacc
 opt_einsum==3.4.0+computecanada
 optax==0.2.4+computecanada
 orbax_checkpoint==0.6.4+computecanada
