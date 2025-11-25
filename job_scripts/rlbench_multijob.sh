@@ -36,7 +36,7 @@ export MUJOCO_PLUGIN_PATH=~/.mujoco/mjpro150/bin; \
 export LD_LIBRARY_PATH=~/.mujoco/mjpro150/bin/:\$LD_LIBRARY_PATH; \
 export D4RL_DATASET_DIR=$SLURM_TMPDIR \
 export MUJOCO_GL=egl \
-export PYOPENGL_PLATFORM=egl \"
+export PYOPENGL_PLATFORM=egl"
 
 setup_rlbench_cmds="export COPPELIASIM_ROOT=${HOME}/CoppeliaSim \
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$COPPELIASIM_ROOT \
