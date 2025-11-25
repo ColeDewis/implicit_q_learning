@@ -1,12 +1,5 @@
 #!/bin/bash
 
-#SBATCH --array=1-15:3
-#SBATCH --time=01:0:00
-#SBATCH --ntasks=1
-#SBATCH --gpus-per-node=l40s
-#SBATCH --mem=16G
-#SBATCH --cpus-per-task=3
-
 # Example usage:
 # sbatch --export=path="$(pwd)" DDQN_multi_job.sh 2 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 01:10:00
 
@@ -34,7 +27,7 @@ CONFIGS=(
 #SBATCH --array=0-$((${#CONFIGS[@]}-1))
 #SBATCH --time=${JOB_TIME}
 #SBATCH --ntasks=1
-#SBATCH --gpus-per-node=a100_3g.20gb:1
+#SBATCH --gpus-per-node=l40s
 #SBATCH --mem=16G
 #SBATCH --cpus-per-task=3
 

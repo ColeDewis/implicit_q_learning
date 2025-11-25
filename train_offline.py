@@ -131,6 +131,7 @@ def main(_):
     kwargs = dict(FLAGS.config)
     apply_overrides(kwargs, FLAGS.overrides)
     save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
+    print(F"SAVING AS {save_file_name}")
     if FLAGS.learner == "DDQN":
         # save_file_name = f"{FLAGS.learner}_{FLAGS.max_approx_method}_{FLAGS.seed}.txt"
         agent = DDQNLearner(

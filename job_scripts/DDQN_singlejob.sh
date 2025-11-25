@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=3
 
 # Example usage:
-# sbatch --export=path="$(pwd)" DDQN_multi_job.sh 2 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 01:10:00
+# sbatch --export=path="$(pwd)" DDQN_singlejob.sh 2 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 CEM_AM_10_10_5 01:10:00
 
 # Set the number of seeds dynamically (first argument)
 NUM_SEEDS=${1:-3}  # Default to 3 seeds if not provided
@@ -48,7 +48,7 @@ mkdir -p $RESULTS_DIR
 # Training loop for multiple seeds per hyperparameter
 for ((i=0; i<NUM_SEEDS; i++)); do
     SEED=$i  # Start seeds at 0
-    python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --max_steps=100 --eval_episodes=100 --eval_interval=100000 --seed=$SEED --learner=DDQN
+    python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --eval_episodes=100 --eval_interval=100000 --seed=$SEED --learner=DDQN
     RESULT_FILE=$RESULTS_DIR/seed${SEED}-env=${ENV_NAME}-hypers=${CONFIG}.txt
-    cp ./tmp/${SEED}.txt $RESULT_FILE
+    cp ./tmp/DDQN_${SEED}.txt $RESULT_FILE
 done
