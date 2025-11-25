@@ -42,7 +42,7 @@ export QT_QPA_PLATFORM_PLUGIN_PATH=$COPPELIASIM_ROOT"
 
 # Copy virtual environment and dataset to temporary directory
 cp $path/venv310.tar $SLURM_TMPDIR/
-cp $path/../venv_rlbench.tar $SLURM_TMPDIR/
+cp $path/../RLBench/venv_rlbench.tar $SLURM_TMPDIR/
 cp ~/.d4rl/datasets/$DATASET_NAME $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
 
