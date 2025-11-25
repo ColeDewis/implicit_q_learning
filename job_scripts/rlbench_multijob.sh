@@ -67,6 +67,7 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/IQL_${SEED}.txt $RESULTS_DIR" C-m
 
 
     # Instance 2 will have rlbench repo:
@@ -75,6 +76,4 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.1 "source .venv_rlbench/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "$setup_rlbench_cmds" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py" C-m
-
-    cp ./tmp/IQL_${SEED}.txt $RESULTS_DIR
 done
