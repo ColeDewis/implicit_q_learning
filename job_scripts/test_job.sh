@@ -25,4 +25,4 @@ source .venv/bin/activate
 
 python $path/train_offline.py --env_name=antmaze-large-play-v0 --config=$path/configs/antmaze_config.py --eval_episodes=100 --eval_interval=100000
 
-cp ./tmp/42.txt $path/
+cp ./tmp/IQL_42.txt $path/

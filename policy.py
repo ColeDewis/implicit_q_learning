@@ -15,6 +15,7 @@ from common import MLP, Params, PRNGKey, default_init
 LOG_STD_MIN = -10.0
 LOG_STD_MAX = 2.0
 
+# fmt: off
 
 class NormalTanhPolicy(nn.Module):
     hidden_dims: Sequence[int]
@@ -80,4 +81,22 @@ def sample_actions(rng: PRNGKey,
                    observations: np.ndarray,
                    temperature: float = 1.0) -> Tuple[PRNGKey, jnp.ndarray]:
     return _sample_actions(rng, actor_def, actor_params, observations,
+                           temperature)
+
+@functools.partial(jax.jit, static_argnames=('actor_def'))
+def _sample_actions_deterministic(
+                   actor_def: nn.Module,
+                   actor_params: Params,
+                   observations: np.ndarray,
+                   temperature: float = 1.0) -> jnp.ndarray:
+    dist = actor_def.apply({'params': actor_params}, observations, temperature)
+    # Return the mode of the distribution
+    return dist.mode()
+
+def sample_actions_deterministic(
+                   actor_def: nn.Module,
+                   actor_params: Params,
+                   observations: np.ndarray,
+                   temperature: float = 1.0) -> jnp.ndarray:
+    return _sample_actions_deterministic(actor_def, actor_params, observations,
                            temperature)
