@@ -4,10 +4,10 @@ import numpy as np
 from gym.spaces import Box
 
 class RemoteRLBenchEnv(gym.Env):
-    def __init__(self):
+    def __init__(self, port):
         context = zmq.Context()
         self.socket = context.socket(zmq.PAIR)
-        self.socket.connect("tcp://localhost:5555")
+        self.socket.connect(f"tcp://localhost:{port}")
 
         self.setSpaces()
 

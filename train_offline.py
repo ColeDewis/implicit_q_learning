@@ -31,6 +31,7 @@ flags.DEFINE_boolean("tqdm", True, "Use tqdm progress bar.")
 flags.DEFINE_string("max_approx_method", "CEM", "Method to use for approximating max.")
 # flags.DEFINE_float("tau", 0.8, "Controls how fast target networks are changed.")
 flags.DEFINE_string("learner", "IQL", "Learning algorithm to use ('IQL' or 'DDQN').")
+flags.DEFINE_integer("port", 5000, "port for communicating with rlbench")
 config_flags.DEFINE_config_file(
     "config",
     "default.py",
@@ -75,7 +76,7 @@ def make_env_and_dataset(env_name: str, seed: int, is_d4rl: bool) -> Tuple[gym.E
         dataset = D4RLDataset(env)
     else:
         dataset = RLBenchDataset('microwave_data.h5')
-        env = RemoteRLBenchEnv()
+        env = RemoteRLBenchEnv(FLAGS.port)
 
     env = wrappers.EpisodeMonitor(env)
     env = wrappers.SinglePrecision(env)
