@@ -77,3 +77,10 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.1 "$setup_rlbench_cmds" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py" C-m
 done
+
+echo "Waiting for Tmux sessions to complete..."
+while [ $(tmux list-sessions 2>/dev/null | grep pair_seed | wc -l) -gt 0 ]; do
+    sleep 10
+done
+
+echo "All sessions completed."
