@@ -15,7 +15,7 @@ def evaluate(agent: nn.Module, env: gym.Env,
         i = 0
         while not done:
             action = agent.sample_actions(observation, temperature=0.0)
-            observation, _, done, info = env.step(action)
+            observation, reward, done, info = env.step(action)
 
             if i > 1000:
                 done = True

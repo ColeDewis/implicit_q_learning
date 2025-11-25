@@ -5,6 +5,7 @@ import d4rl
 import gym
 import numpy as np
 from tqdm import tqdm
+import h5py
 
 Batch = collections.namedtuple(
     'Batch',
@@ -108,17 +109,26 @@ class RLBenchDataset(Dataset):
                  clip_to_eps: bool = True,
                  eps: float = 1e-5):
         try:
-            np_data = np.load(data_path, allow_pickle=True)
+            def load_h5py_to_dict(filename):
+                loaded_data = {}
+                
+                with h5py.File(filename, 'r') as f:
+                    for key, value in f.items():
+                        loaded_data[key] = np.array(value)
+                        
+                return loaded_data
+
+            np_data = load_h5py_to_dict(data_path)
         except Exception as e:
             print(f"Error opening npy dataset: {e}")
             return
 
         dataset = {
-            'observations': np.array(np_data.item().get('observations'), dtype=np.float32),
-            'actions': np.array(np_data.item().get('actions'), dtype=np.float32),
-            'next_observations': np.array(np_data.item().get('next_observations'), dtype=np.float32),
-            'rewards': np.array(np_data.item().get('rewards'), dtype=np.float32),
-            'terminals': np.array(np_data.item().get('terminals'), dtype=bool),
+            'observations': np.array(np_data['observations'], dtype=np.float32),
+            'actions': np.array(np_data['actions'], dtype=np.float32),
+            'next_observations': np.array(np_data['next_observations'], dtype=np.float32),
+            'rewards': np.array(np_data['rewards'], dtype=np.float32),
+            'terminals': np.array(np_data['terminals'], dtype=bool),
         }
         self.dataset = dataset
 
