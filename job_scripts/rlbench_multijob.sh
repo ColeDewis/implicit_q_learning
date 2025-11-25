@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=nvidia_h100_80gb_hbm3_2g.20gb:1
-#SBATCH --mem=8G
+#SBATCH --mem=70G
 #SBATCH --cpus-per-task=3
 
 # Example usage:
@@ -34,7 +34,9 @@ module load cuda
 setup_iql_cmds="export MUJOCO_PATH=~/.mujoco/mjpro150; \
 export MUJOCO_PLUGIN_PATH=~/.mujoco/mjpro150/bin; \
 export LD_LIBRARY_PATH=~/.mujoco/mjpro150/bin/:\$LD_LIBRARY_PATH; \
-export D4RL_DATASET_DIR=$SLURM_TMPDIR"
+export D4RL_DATASET_DIR=$SLURM_TMPDIR \
+export MUJOCO_GL=egl \
+export PYOPENGL_PLATFORM=egl \"
 
 setup_rlbench_cmds="export COPPELIASIM_ROOT=${HOME}/CoppeliaSim \
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$COPPELIASIM_ROOT \
@@ -52,7 +54,9 @@ tar -xvf venv_rlbench.tar
 
 # Create results directory
 RESULTS_DIR=$path/results/IQL/${ENV_NAME}_${DATASET_NAME%.*}/
+LOG_DIR=$RESULTS_DIR/logs
 mkdir -p $RESULTS_DIR
+mkdir -p $LOG_DIR
 
 # Training loop for multiple seeds
 for ((i=0; i<STEP_SIZE; i++)); do
@@ -60,13 +64,16 @@ for ((i=0; i<STEP_SIZE; i++)); do
     SESSION_NAME="pair_seed_${SEED}"
     echo "Starting Tmux session: $SESSION_NAME"
 
+    LOG_TRAIN="$LOG_DIR/seed_${SEED}_train.log"
+    LOG_PARTNER="$LOG_DIR/seed_${SEED}_partner.log"
+
     # tmux will have 2 instances per session
     # Instance 1 will have iql repo:
     tmux new-session -d -s $SESSION_NAME
     tmux send-keys -t ${SESSION_NAME}:0.0 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED > $LOG_TRAIN 2>&1" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/IQL_${SEED}.txt $RESULTS_DIR" C-m
 
 
@@ -75,12 +82,14 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.1 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "source .venv_rlbench/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "$setup_rlbench_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py > $LOG_PARTNER 2>&1" C-m
 done
 
 echo "Waiting for Tmux sessions to complete..."
 while [ $(tmux list-sessions 2>/dev/null | grep pair_seed | wc -l) -gt 0 ]; do
     sleep 10
+    echo "--- Status Check ---"
+    tail -n 1 $LOG_DIR/*.log
 done
 
 echo "All sessions completed."
