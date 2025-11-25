@@ -209,8 +209,9 @@ def main(_):
             summary_writer.flush()
 
             eval_returns.append((i, eval_stats["return"]))
+            # TODO: add arg for the algorithm here also.
             np.savetxt(
-                os.path.join(FLAGS.save_dir, f"{FLAGS.seed}.txt"),
+                os.path.join(FLAGS.save_dir, f"IQL_{FLAGS.seed}.txt"),
                 eval_returns,
                 fmt=["%d", "%.1f"],
             )
