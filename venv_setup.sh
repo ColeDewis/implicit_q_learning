@@ -12,6 +12,6 @@ source .venv/bin/activate
 pip install "cython<3"
 pip install -r requirements_cc.txt
 
-tar -cavf venv310.tar .venv
+tar -caf venv310.tar .venv
 
 pip freeze
