@@ -9,6 +9,7 @@ from absl import app, flags
 from ml_collections import config_flags
 from tensorboardX import SummaryWriter
 
+from env_client import RemoteRLBenchEnv
 import wrappers
 from dataset_utils import Batch, D4RLDataset, ReplayBuffer, split_into_trajectories
 from evaluation import evaluate
@@ -41,6 +42,7 @@ config_flags.DEFINE_config_file(
 flags.DEFINE_list(
     "overrides", None, "List of hyperparameter overrides in the format key=value."
 )
+flags.DEFINE_integer("port", 5000, "port for communicating with rlbench")
 
 
 def normalize(dataset):
