@@ -2,6 +2,7 @@ import gym
 import zmq
 import numpy as np
 from gym.spaces import Box
+import time
 
 class RemoteRLBenchEnv(gym.Env):
     def __init__(self, port):
@@ -31,3 +32,9 @@ class RemoteRLBenchEnv(gym.Env):
     def close(self):
         self.socket.send_pyobj({'cmd': 'close'})
         self.socket.recv_pyobj()
+
+    def testTime(self):
+        self.socket.send_pyobj({'cmd': 'time', 'stamp': time.time()})
+        diff = self.socket.recv_pyobj()
+        print(diff)
+

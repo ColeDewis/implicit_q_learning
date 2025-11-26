@@ -145,6 +145,8 @@ def main(_):
 
     env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed, is_d4rl)
 
+    env.testTime()
+
     kwargs = dict(FLAGS.config)
     apply_overrides(kwargs, FLAGS.overrides)
     save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
