@@ -49,8 +49,8 @@ cp ~/.d4rl/datasets/$DATASET_NAME $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
 
 # Extract virtual environment and activate it
-tar -xvf venv310.tar
-tar -xvf venv_rlbench.tar
+tar -xf venv310.tar
+tar -xf venv_rlbench.tar
 
 # Create results directory
 RESULTS_DIR=$path/results/IQL/${ENV_NAME}_${DATASET_NAME%.*}/
@@ -83,7 +83,7 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.1 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "source .venv_rlbench/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "$setup_rlbench_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py --port=$PORT > $LOG_PARTNER 2>&1" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.1 "rvfb-run -a python $path/../RLBench/env_server.py --port=$PORT > $LOG_PARTNER 2>&1" C-m
 done
 
 echo "Waiting for Tmux sessions to complete..."

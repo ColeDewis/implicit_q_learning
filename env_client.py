@@ -7,6 +7,7 @@ class RemoteRLBenchEnv(gym.Env):
     def __init__(self, port):
         context = zmq.Context()
         self.socket = context.socket(zmq.PAIR)
+        print(f"tcp://localhost:{port}")
         self.socket.connect(f"tcp://localhost:{port}")
 
         self.setSpaces()
