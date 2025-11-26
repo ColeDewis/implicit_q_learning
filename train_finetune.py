@@ -69,11 +69,17 @@ def normalize(dataset):
     dataset.rewards *= 1000.0
 
 
-def make_env_and_dataset(env_name: str, seed: int) -> Tuple[gym.Env, D4RLDataset]:
+def make_env_and_dataset(env_name: str, seed: int, is_d4rl: bool) -> Tuple[gym.Env, D4RLDataset]:
     # NOTE I think this has to be before making env
     np.random.seed(seed)
     random.seed(seed)
-    env = gym.make(env_name, seed=seed)
+
+    if is_d4rl:
+        env = gym.make(env_name, seed=seed)
+        dataset = D4RLDataset(env)
+    else:
+        dataset = RLBenchDataset('microwave_data.h5')
+        env = RemoteRLBenchEnv(FLAGS.port)
 
     env = wrappers.EpisodeMonitor(env)
     env = wrappers.SinglePrecision(env)
@@ -131,7 +137,16 @@ def main(_):
     )
     os.makedirs(FLAGS.save_dir, exist_ok=True)
 
-    env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed)
+    if ("antmaze" in FLAGS.env_name
+        or "halfcheetah" in FLAGS.env_name
+        or "walker2d" in FLAGS.env_name
+        or "hopper" in FLAGS.env_name
+    ):
+        is_d4rl = True
+    else:
+        is_d4rl = False
+
+    env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed, is_d4rl)
 
     action_dim = env.action_space.shape[0]
     replay_buffer = ReplayBuffer(
