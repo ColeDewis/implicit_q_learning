@@ -108,7 +108,7 @@ def make_env_and_dataset(env_name: str, seed: int) -> Tuple[gym.Env, D4RLDataset
 def apply_overrides(config, overrides):
     """Apply a list of key=value overrides to the config."""
     if overrides:
-        for override in overrides[0].split("-"):
+        for override in overrides:
             key, value = override.split("=")
             # Convert value to the appropriate type
             if value.isdigit():
@@ -130,8 +130,9 @@ def main(_):
     env, dataset = make_env_and_dataset(FLAGS.env_name, FLAGS.seed)
 
     kwargs = dict(FLAGS.config)
+    print(FLAGS.overrides)
     apply_overrides(kwargs, FLAGS.overrides)
-    save_file_name = f"{FLAGS.learner}_{FLAGS.seed}_{FLAGS.overrides[0]}.txt"
+    save_file_name = f"{FLAGS.learner}_{FLAGS.seed}_{'-'.join(FLAGS.overrides)}.txt"
     print(F"SAVING AS {save_file_name}")
     print(f"USING HYPERS: {kwargs}")
     if FLAGS.learner == "DDQN":
