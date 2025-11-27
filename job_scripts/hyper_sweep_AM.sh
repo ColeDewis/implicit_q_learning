@@ -89,5 +89,5 @@ for ((i=0; i<NUM_SEEDS; i++)); do
     SEED=$i  # Start seeds at 0
     python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --learner=DDQN --eval_episodes=100 --eval_interval=1000000 --seed=$SEED --overrides=$HYPERPARAM
     RESULT_FILE=$RESULTS_DIR/seed${SEED}-env=${ENV_NAME}-hypers=${HYPERPARAM_FORMATTED}.txt
-    cp ./tmp/DDQN_${SEED}_${SLURM_ARRAY_TASK_ID}.txt $RESULT_FILE
+    cp ./tmp/DDQN_${SEED}_${HYPERPARAM}.txt $RESULT_FILE
 done
