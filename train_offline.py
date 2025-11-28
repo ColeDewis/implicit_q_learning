@@ -150,7 +150,8 @@ def main(_):
     kwargs = dict(FLAGS.config)
     print(FLAGS.overrides)
     apply_overrides(kwargs, FLAGS.overrides)
-    save_file_name = f"{FLAGS.learner}_{FLAGS.seed}_{'-'.join(FLAGS.overrides)}.txt"
+    # save_file_name = f"{FLAGS.learner}_{FLAGS.seed}_{'-'.join(FLAGS.overrides)}.txt"
+    save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
     print(F"SAVING AS {save_file_name}")
     print(f"USING HYPERS: {kwargs}")
     if FLAGS.learner == "DDQN":
