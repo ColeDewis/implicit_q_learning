@@ -53,6 +53,7 @@ class CEM():
       x = self.__uniformSampleData(_min, _max)
       s = self.__functionReward(instr, x)
       s = self.__sortSample(s)
+      # print(f"{instr} {jnp.sum(s[0][0])}")
       x = jnp.array([ s[i][0] for i in range(len(s)) ] )
 
       # update parameters

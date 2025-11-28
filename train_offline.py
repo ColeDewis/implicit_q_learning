@@ -28,6 +28,7 @@ flags.DEFINE_integer("eval_interval", 10000, "Eval interval.")
 flags.DEFINE_integer("batch_size", 256, "Mini batch size.")
 flags.DEFINE_integer("max_steps", int(1e6), "Number of training steps.")
 flags.DEFINE_boolean("tqdm", True, "Use tqdm progress bar.")
+flags.DEFINE_boolean("dummy", False, "set to True to only save dummy data.")
 flags.DEFINE_string("max_approx_method", "CEM", "Method to use for approximating max.")
 # flags.DEFINE_float("tau", 0.8, "Controls how fast target networks are changed.")
 flags.DEFINE_string("learner", "IQL", "Learning algorithm to use ('IQL' or 'DDQN').")
@@ -147,8 +148,11 @@ def main(_):
 
 
     kwargs = dict(FLAGS.config)
+    print(FLAGS.overrides)
     apply_overrides(kwargs, FLAGS.overrides)
-    save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
+    save_file_name = f"{FLAGS.learner}_{FLAGS.seed}_{'-'.join(FLAGS.overrides)}.txt"
+    print(F"SAVING AS {save_file_name}")
+    print(f"USING HYPERS: {kwargs}")
     if FLAGS.learner == "DDQN":
         # save_file_name = f"{FLAGS.learner}_{FLAGS.max_approx_method}_{FLAGS.seed}.txt"
         agent = DDQNLearner(
@@ -169,32 +173,35 @@ def main(_):
         )
     else:
         assert(f"Learner {FLAGS.learner} is not implemented")
-
     eval_returns = []
+    if FLAGS.dummy:
+        eval_returns = [(-1, -10)]
     for i in tqdm.tqdm(
         range(1, FLAGS.max_steps + 1), smoothing=0.1, disable=not FLAGS.tqdm
     ):
-        batch = dataset.sample(FLAGS.batch_size)
+        if not FLAGS.dummy:
+            batch = dataset.sample(FLAGS.batch_size)
 
-        # update target
-        update_info = agent.update(batch)
+            # update target
+            update_info = agent.update(batch)
 
-        if i % FLAGS.log_interval == 0:
-            for k, v in update_info.items():
-                if v.ndim == 0:
-                    summary_writer.add_scalar(f"training/{k}", v, i)
-                else:
-                    summary_writer.add_histogram(f"training/{k}", v, i)
-            summary_writer.flush()
+            if i % FLAGS.log_interval == 0:
+                for k, v in update_info.items():
+                    if v.ndim == 0:
+                        summary_writer.add_scalar(f"training/{k}", v, i)
+                    else:
+                        summary_writer.add_histogram(f"training/{k}", v, i)
+                summary_writer.flush()
 
         if i % FLAGS.eval_interval == 0:
-            eval_stats = evaluate(agent, env, FLAGS.eval_episodes)
+            if not FLAGS.dummy:
+                eval_stats = evaluate(agent, env, FLAGS.eval_episodes)
 
-            for k, v in eval_stats.items():
-                summary_writer.add_scalar(f'evaluation/average_{k}s', v, i)
-            summary_writer.flush()
+                for k, v in eval_stats.items():
+                    summary_writer.add_scalar(f"evaluation/average_{k}s", v, i)
+                summary_writer.flush()
 
-            eval_returns.append((i, eval_stats["return"]))
+                eval_returns.append((i, eval_stats["return"]))
             np.savetxt(
                 os.path.join(FLAGS.save_dir, save_file_name),
                 eval_returns,

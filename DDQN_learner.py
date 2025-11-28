@@ -69,9 +69,9 @@ def _update_jit(
         CEM_rng, rng = jax.random.split(rng)
         max_actions, max_action_values = get_max_actions_values_CEM(critic, batch.next_observations, batch.actions.shape[1], CEM_rng, max_approx_hypers)
     elif max_approx_method == "AC":
-        max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, temperature, max_approx_hypers)
+        max_actions, max_action_values = get_max_actions_values_AC(actor, critic, batch.next_observations, temperature)
     elif max_approx_method == "GA":
-        max_actions, max_action_values = get_max_actions_values_GA(critic, batch.next_observations, batch.actions.shape[1], max_approx_hypers)
+        max_actions, max_action_values = get_max_actions_values_GA(critic, batch.next_observations, batch.actions.shape[1])
 
 
     new_value, value_info = update_v(target_critic, value, batch, max_action_values)
