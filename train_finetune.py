@@ -11,7 +11,7 @@ from tensorboardX import SummaryWriter
 
 from env_client import RemoteRLBenchEnv
 import wrappers
-from dataset_utils import Batch, D4RLDataset, ReplayBuffer, split_into_trajectories
+from dataset_utils import Batch, D4RLDataset, RLBenchDataset, ReplayBuffer, split_into_trajectories
 from evaluation import evaluate
 from learner import Learner
 
@@ -99,8 +99,6 @@ def make_env_and_dataset(env_name: str, seed: int, is_d4rl: bool) -> Tuple[gym.E
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
 
-    dataset = D4RLDataset(env)
-
     if "antmaze" in FLAGS.env_name:
         # dataset.rewards -= 1.0
         pass  # normalized in the batch instead
@@ -156,6 +154,7 @@ def main(_):
 
     kwargs = dict(FLAGS.config)
     apply_overrides(kwargs, FLAGS.overrides)
+    print(kwargs)
     agent = Learner(
         FLAGS.seed,
         env.observation_space.sample()[np.newaxis],
@@ -189,7 +188,8 @@ def main(_):
             )
             observation = next_observation
 
-            if done:
+            # also reset every thousand to avoid whacky configs
+            if done or i % 1000 == 0:
                 observation, done = env.reset(), False
                 for k, v in info["episode"].items():
                     summary_writer.add_scalar(
@@ -212,10 +212,14 @@ def main(_):
 
         if i % FLAGS.log_interval == 0:
             for k, v in update_info.items():
-                if v.ndim == 0:
-                    summary_writer.add_scalar(f"training/{k}", v, i)
-                else:
-                    summary_writer.add_histogram(f"training/{k}", v, i)
+                try:
+                    if v.ndim == 0:
+                        summary_writer.add_scalar(f"training/{k}", v, i)
+                    else:
+                        summary_writer.add_histogram(f"training/{k}", v, i)
+                except Exception as e:
+                    print("some problem writing to summery: ", e)
+
             summary_writer.flush()
 
         if i % FLAGS.eval_interval == 0:

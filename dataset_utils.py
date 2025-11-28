@@ -203,11 +203,15 @@ class ReplayBuffer(Dataset):
 
         self.observations[:num_samples] = dataset.observations[indices]
         self.actions[:num_samples] = dataset.actions[indices]
-        self.rewards[:num_samples] = dataset.rewards[indices]
-        self.masks[:num_samples] = dataset.masks[indices]
-        self.dones_float[:num_samples] = dataset.dones_float[indices]
         self.next_observations[:num_samples] = dataset.next_observations[
             indices]
+
+        # self.rewards[:num_samples] = dataset.rewards[indices]
+        # self.masks[:num_samples] = dataset.masks[indices]
+        # self.dones_float[:num_samples] = dataset.dones_float[indices]
+        self.rewards[:num_samples] = dataset.rewards[indices].squeeze()
+        self.masks[:num_samples] = dataset.masks[indices].squeeze()
+        self.dones_float[:num_samples] = dataset.dones_float[indices].squeeze()
 
         self.insert_index = num_samples
         self.size = num_samples
