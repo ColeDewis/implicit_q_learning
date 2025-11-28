@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=3
 
 # Example usage:
-# sbatch --time=03:00:00 --array=1-10:2 --export=path="$(pwd)" job_scripts/rlbench_multijob_finetune.sh 2 microwave microwave_data.h5 mujoco_config.py 100000
+# sbatch --time=07:00:00 --array=1-10:2 --export=path="$(pwd)" job_scripts/rlbench_multijob_finetune.sh 2 microwave microwave_data.h5 mujoco_config.py 1000000
 # Note that you MUST pass consistent datasets and environment names, and the number
 # (step size) after the script name must match the array step size.
 # Run this from the root repository folder.
@@ -79,7 +79,8 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.1 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "source .venv_rlbench/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "$setup_rlbench_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py --port=$PORT" C-m
+    # tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py --port=$PORT" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.1 "python $path/../RLBench/env_server.py --port=$PORT" C-m
 done
 
 echo "Waiting for Tmux sessions to complete..."

@@ -8,7 +8,7 @@
 #SBATCH --cpus-per-task=3
 
 # Example usage:
-# sbatch --export=path="$(pwd)" rlbench_DDQN_multi_job.sh 3 microwave microwave_data.h5 03:00:00
+# sbatch --export=path="$(pwd)" rlbench_DDQN_multi_job.sh 3 microwave microwave_data.h5 05:00:00
 
 # Set the number of seeds dynamically (first argument)
 NUM_SEEDS=${1:-3}  # Default to 3 seeds if not provided
