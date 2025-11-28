@@ -2,13 +2,13 @@
 
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=l40s
-#SBATCH --mem=8G
+#SBATCH --mem=10G
 #SBATCH --cpus-per-task=3
 #SBATCH --mail-user=jleng1@ualberta.ca
 #SBATCH --mail-type=END,FAIL
 
 # Example usage:
-# sbatch --time=01:00:00 --array=1-28 --export=path="$(pwd)" job_scripts/hyper_sweep_AM.sh 2 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 antmaze_config.py
+# sbatch --time=01:00:00 --array=1-28 --export=path="$(pwd)" job_scripts/hyper_sweep_AM.sh 2 antmaze-large-play-v0 Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5 CEM_AM_10_20_10
 
 # Set the number of seeds dynamically (first argument)
 NUM_SEEDS=${1:-2}  # Default to 2 seeds if not provided
