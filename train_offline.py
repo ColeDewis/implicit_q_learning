@@ -209,6 +209,9 @@ def main(_):
                 fmt=["%d", "%.1f"],
             )
 
+    env.close()
+
+
 
 if __name__ == "__main__":
     app.run(main)
