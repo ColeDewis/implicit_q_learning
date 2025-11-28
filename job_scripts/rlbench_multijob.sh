@@ -78,8 +78,8 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.1 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "source .venv_rlbench/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "$setup_rlbench_cmds" C-m
-    # tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py --port=$PORT" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.1 "python $path/../RLBench/env_server.py --port=$PORT" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py --port=$PORT --seed=$SEED" C-m
+    # tmux send-keys -t ${SESSION_NAME}:0.1 "python $path/../RLBench/env_server.py --port=$PORT --seed=$SEED" C-m
 done
 
 echo "Waiting for Tmux sessions to complete..."
