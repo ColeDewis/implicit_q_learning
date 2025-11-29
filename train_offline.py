@@ -151,8 +151,9 @@ def main(_):
     print(FLAGS.overrides)
     apply_overrides(kwargs, FLAGS.overrides)
     save_file_name = f"{FLAGS.learner}_{FLAGS.seed}_{'-'.join(FLAGS.overrides)}.txt"
+    
     # save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
-    print(F"SAVING AS {save_file_name}")
+    print(F"SAVING AS {os.path.join(FLAGS.save_dir, save_file_name)}")
     print(f"USING HYPERS: {kwargs}")
     if FLAGS.learner == "DDQN":
         # save_file_name = f"{FLAGS.learner}_{FLAGS.max_approx_method}_{FLAGS.seed}.txt"
@@ -208,6 +209,9 @@ def main(_):
                 eval_returns,
                 fmt=["%d", "%.1f"],
             )
+
+    env.close()
+
 
 
 if __name__ == "__main__":

@@ -84,6 +84,7 @@ tar -xf venv_rlbench.tar
 # Create results directory
 RESULTS_DIR=$path/results/hyper_sweep_finetune/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
+mkdir -p tmp
 
 # Get the hyperparameter combination for this job
 HYPERPARAM=${HYPERPARAMS[$SLURM_ARRAY_TASK_ID]}
@@ -96,8 +97,8 @@ for ((i=0; i<STEP_SIZE; i++)); do
     SEED=$((SLURM_ARRAY_TASK_ID + i))
     PORT=$((i+SLURM_ARRAY_TASK_ID+5000))
     SESSION_NAME="pair_seed_${SEED}"
-    RESULT_FILE=$RESULTS_DIR/seed${SEED}-env=${ENV_NAME}-hypers=${HYPERPARAM_FORMATTED}.txt
-    echo "Starting Tmux session: $SESSION_NAME"
+    RESULT_FILE=$RESULTS_DIR/${CONFIG}seed${SEED}-env=${ENV_NAME}-hypers=${HYPERPARAM_FORMATTED}.txt
+    echo "Starting Tmux session: $SESSION_NAME and saving $path/tmp/DDQN_${SEED}_${HYPERPARAM_FORMATTED}.txt in $RESULT_FILE"
 
     # tmux will have 2 instances per session
     # Instance 1 will have iql repo:
@@ -105,8 +106,8 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.0 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_finetune.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --eval_episodes=100 --eval_interval=1000000  --seed=$SEED --port=$PORT --overrides=$HYPERPARAM" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/${SEED}_${SLURM_ARRAY_TASK_ID}.txt $RESULTS_FILE" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --learner=DDQN --eval_episodes=100 --eval_interval=1000000  --seed=$SEED --port=$PORT --overrides=$HYPERPARAM" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/DDQN_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE" C-m
 
 
     # Instance 2 will have rlbench repo:
