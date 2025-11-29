@@ -183,6 +183,8 @@ def main(_):
         [(-1, -10)],
         fmt=["%d", "%.1f"],
     )
+    env.close()
+    return
     for i in tqdm.tqdm(
         range(1, FLAGS.max_steps + 1), smoothing=0.1, disable=not FLAGS.tqdm
     ):
