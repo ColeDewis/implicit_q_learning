@@ -9,6 +9,7 @@ from absl import app, flags
 from ml_collections import config_flags
 from tensorboardX import SummaryWriter
 
+from DDQN_learner import DDQNLearner
 from env_client import RemoteRLBenchEnv
 import wrappers
 from dataset_utils import Batch, D4RLDataset, RLBenchDataset, ReplayBuffer, split_into_trajectories
@@ -43,6 +44,7 @@ flags.DEFINE_list(
     "overrides", None, "List of hyperparameter overrides in the format key=value."
 )
 flags.DEFINE_integer("port", 5000, "port for communicating with rlbench")
+flags.DEFINE_string("learner", "IQL", "Learning algorithm to use ('IQL' or 'DDQN').")
 
 
 def normalize(dataset):
@@ -153,14 +155,32 @@ def main(_):
     replay_buffer.initialize_with_dataset(dataset, FLAGS.init_dataset_size)
 
     kwargs = dict(FLAGS.config)
+    print(FLAGS.overrides)
     apply_overrides(kwargs, FLAGS.overrides)
-    print(kwargs)
-    agent = Learner(
-        FLAGS.seed,
-        env.observation_space.sample()[np.newaxis],
-        env.action_space.sample()[np.newaxis],
-        **kwargs,
-    )
+    # save_file_name = f"{FLAGS.learner}_{FLAGS.seed}_{'-'.join(FLAGS.overrides)}.txt"
+    save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
+    print(F"SAVING AS {os.path.join(FLAGS.save_dir, save_file_name)}")
+    print(f"USING HYPERS: {kwargs}")
+    if FLAGS.learner == "DDQN":
+        # save_file_name = f"{FLAGS.learner}_{FLAGS.max_approx_method}_{FLAGS.seed}.txt"
+        agent = DDQNLearner(
+            FLAGS.seed,
+            env.observation_space.sample()[np.newaxis],
+            env.action_space.sample()[np.newaxis],
+            max_steps=FLAGS.max_steps,
+            **kwargs,
+        )
+    elif FLAGS.learner == "IQL":
+        # save_file_name = f"{FLAGS.learner}_{FLAGS.seed}.txt"
+        agent = Learner(
+            FLAGS.seed,
+            env.observation_space.sample()[np.newaxis],
+            env.action_space.sample()[np.newaxis],
+            max_steps=FLAGS.max_steps,
+            **kwargs,
+        )
+    else:
+        assert(f"Learner {FLAGS.learner} is not implemented")
 
     eval_returns = []
     observation, done = env.reset(), False
@@ -232,7 +252,7 @@ def main(_):
             eval_returns.append((i, eval_stats["return"]))
             # TODO: add arg for the algorithm here also.
             np.savetxt(
-                os.path.join(FLAGS.save_dir, f"IQL_{FLAGS.seed}.txt"),
+                os.path.join(FLAGS.save_dir, save_file_name),
                 eval_returns,
                 fmt=["%d", "%.1f"],
             )
