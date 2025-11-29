@@ -82,7 +82,7 @@ tar -xf venv310.tar
 tar -xf venv_rlbench.tar
 
 # Create results directory
-RESULTS_DIR=$path/results/hyper_sweep/${ENV_NAME}_${DATASET_NAME%.*}/
+RESULTS_DIR=$path/results/hyper_sweep_finetune/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
 
 # Get the hyperparameter combination for this job
@@ -105,7 +105,7 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.0 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --eval_episodes=100 --eval_interval=1000000  --seed=$SEED --port=$PORT --overrides=$HYPERPARAM" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_finetune.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --eval_episodes=100 --eval_interval=1000000  --seed=$SEED --port=$PORT --overrides=$HYPERPARAM" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/${SEED}_${SLURM_ARRAY_TASK_ID}.txt $RESULTS_FILE" C-m
 
 
@@ -115,7 +115,6 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.1 "source .venv_rlbench/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "$setup_rlbench_cmds" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py --port=$PORT --seed=$SEED" C-m
-    # tmux send-keys -t ${SESSION_NAME}:0.1 "python $path/../RLBench/env_server.py --port=$PORT" C-m
 done
 
 echo "Waiting for Tmux sessions to complete..."
