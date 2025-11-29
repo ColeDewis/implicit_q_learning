@@ -178,13 +178,6 @@ def main(_):
     eval_returns = []
     if FLAGS.dummy:
         eval_returns = [(-1, -10)]
-    np.savetxt(
-        os.path.join(FLAGS.save_dir, save_file_name),
-        [(-1, -10)],
-        fmt=["%d", "%.1f"],
-    )
-    env.close()
-    return
     for i in tqdm.tqdm(
         range(1, FLAGS.max_steps + 1), smoothing=0.1, disable=not FLAGS.tqdm
     ):
