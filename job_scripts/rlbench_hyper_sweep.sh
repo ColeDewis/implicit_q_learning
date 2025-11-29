@@ -84,6 +84,7 @@ tar -xf venv_rlbench.tar
 # Create results directory
 RESULTS_DIR=$path/results/hyper_sweep/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
+mkdir -p tmp
 
 # Get the hyperparameter combination for this job
 HYPERPARAM=${HYPERPARAMS[$SLURM_ARRAY_TASK_ID]}
@@ -97,7 +98,7 @@ for ((i=0; i<STEP_SIZE; i++)); do
     PORT=$((i+SLURM_ARRAY_TASK_ID+5000))
     SESSION_NAME="pair_seed_${SEED}"
     RESULT_FILE=$RESULTS_DIR/seed${SEED}-env=${ENV_NAME}-hypers=${HYPERPARAM_FORMATTED}.txt
-    echo "Starting Tmux session: $SESSION_NAME and saving ./tmp/IQL_${SEED}_${HYPERPARAM_FORMATTED}.txt in $RESULTS_FILE"
+    echo "Starting Tmux session: $SESSION_NAME and saving $path/tmp/IQL_${SEED}_${HYPERPARAM_FORMATTED}.txt in $RESULTS_FILE"
 
     # tmux will have 2 instances per session
     # Instance 1 will have iql repo:
