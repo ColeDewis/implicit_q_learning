@@ -106,7 +106,7 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.0 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --eval_episodes=100 --eval_interval=1000000  --seed=$SEED --port=$PORT --overrides=$HYPERPARAM" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --learner=DDQN --eval_episodes=100 --eval_interval=1000000  --seed=$SEED --port=$PORT --overrides=$HYPERPARAM" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/IQL_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE" C-m
 
 
