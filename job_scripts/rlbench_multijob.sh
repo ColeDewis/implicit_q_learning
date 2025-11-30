@@ -56,7 +56,7 @@ tar -xf venv310.tar
 tar -xf venv_rlbench.tar
 
 # Create results directory
-RESULTS_DIR=$path/results/IQL_finetune/${ENV_NAME}_${DATASET_NAME%.*}/
+RESULTS_DIR=$path/results/CEM_finetune/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
 
 # Training loop for multiple seeds
@@ -74,7 +74,7 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.0 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_finetune.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED --port=$PORT --overrides=$OVERRIDE" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_finetune.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --learner=DDQN --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED --port=$PORT --overrides=$OVERRIDE" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/IQL_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE" C-m
 
 
