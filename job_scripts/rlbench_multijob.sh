@@ -48,6 +48,9 @@ cp $path/../RLBench/venv_rlbench.tar $SLURM_TMPDIR/
 cp ~/.d4rl/datasets/$DATASET_NAME $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
 
+OVERRIDE="actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0075"
+
+
 # Extract virtual environment and activate it
 tar -xf venv310.tar
 tar -xf venv_rlbench.tar
@@ -61,6 +64,8 @@ for ((i=0; i<STEP_SIZE; i++)); do
     SEED=$((SLURM_ARRAY_TASK_ID + i))
     PORT=$((i+SLURM_ARRAY_TASK_ID+5000))
     SESSION_NAME="pair_seed_${SEED}"
+    HYPERPARAM_FORMATTED=$(echo $OVERRIDE | tr ',' '-')
+    RESULT_FILE=$RESULTS_DIR/${CONFIG}seed${SEED}-env=${ENV_NAME}-hypers=${HYPERPARAM_FORMATTED}.txt
     echo "Starting Tmux session: $SESSION_NAME"
 
     # tmux will have 2 instances per session
@@ -69,8 +74,8 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.0 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED --port=$PORT" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/IQL_${SEED}.txt $RESULTS_DIR" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED --port=$PORT --overrides=$OVERRIDE" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/IQL_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE" C-m
 
 
     # Instance 2 will have rlbench repo:
@@ -79,7 +84,6 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.1 "source .venv_rlbench/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "$setup_rlbench_cmds" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py --port=$PORT --seed=$SEED" C-m
-    # tmux send-keys -t ${SESSION_NAME}:0.1 "python $path/../RLBench/env_server.py --port=$PORT --seed=$SEED" C-m
 done
 
 echo "Waiting for Tmux sessions to complete..."
