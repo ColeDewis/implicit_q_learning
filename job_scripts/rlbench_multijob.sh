@@ -48,7 +48,8 @@ cp $path/../RLBench/venv_rlbench.tar $SLURM_TMPDIR/
 cp ~/.d4rl/datasets/$DATASET_NAME $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
 
-OVERRIDE="actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0075"
+# OVERRIDE="actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0075" # IQL 
+OVERRIDE="" # CEM
 
 
 # Extract virtual environment and activate it
@@ -75,7 +76,7 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_finetune.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --learner=DDQN --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED --port=$PORT --overrides=$OVERRIDE" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/IQL_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/DDQN_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE" C-m
 
 
     # Instance 2 will have rlbench repo:
