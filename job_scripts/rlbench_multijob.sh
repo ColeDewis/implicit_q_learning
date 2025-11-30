@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=nvidia_h100_80gb_hbm3_2g.20gb:1
-#SBATCH --mem=70G
+#SBATCH --mem=16G
 #SBATCH --cpus-per-task=3
 
 # Example usage:
