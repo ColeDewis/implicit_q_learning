@@ -49,7 +49,8 @@ cp ~/.d4rl/datasets/$DATASET_NAME $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
 
 # OVERRIDE="actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0075" # IQL 
-OVERRIDE="" # CEM
+# OVERRIDE="" # CEM
+OVERRIDE="actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.0025" # AM
 
 
 # Extract virtual environment and activate it
