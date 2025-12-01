@@ -60,6 +60,9 @@ tar -xf venv_rlbench.tar
 RESULTS_DIR=$path/results/CEM_finetune/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
 
+LOGS_DIR=$path/logs/
+mkdir -p $LOGS_DIR
+
 # Training loop for multiple seeds
 for ((i=0; i<STEP_SIZE; i++)); do
     SEED=$((SLURM_ARRAY_TASK_ID + i))
@@ -67,6 +70,8 @@ for ((i=0; i<STEP_SIZE; i++)); do
     SESSION_NAME="pair_seed_${SEED}"
     HYPERPARAM_FORMATTED=$(echo $OVERRIDE | tr ',' '-')
     RESULT_FILE=$RESULTS_DIR/${CONFIG}seed${SEED}-env=${ENV_NAME}-hypers=${HYPERPARAM_FORMATTED}.txt
+    LEARNER_LOG_FILE=$LOGS_DIR/learner_${SEED}.txt
+    RLBENCH_LOG_FILE=$LOGS_DIR/rlbench_${SEED}.txt
     echo "Starting Tmux session: $SESSION_NAME"
 
     # tmux will have 2 instances per session
@@ -75,7 +80,7 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.0 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "python $path/train_finetune.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --learner=DDQN --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED --port=$PORT --overrides=$OVERRIDE" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "python -u $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --learner=DDQN --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED --port=$PORT --overrides=$OVERRIDE 2>&1 | tee -a $LEARNER_LOG_FILE" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/DDQN_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE" C-m
 
 
@@ -84,7 +89,7 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.1 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "source .venv_rlbench/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.1 "$setup_rlbench_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python $path/../RLBench/env_server.py --port=$PORT --seed=$SEED" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.1 "xvfb-run -a python -u $path/../RLBench/env_server.py --port=$PORT --seed=$SEED 2>&1 | tee -a $RLBENCH_LOG_FILE" C-m
 done
 
 echo "Waiting for Tmux sessions to complete..."
