@@ -29,7 +29,9 @@ def parse_filename(filename: str):
     Parses a filename like 'seed1-env=halfcheetah-hypers=lr0.1_disc0.99.txt'.
     """
     # seed number (\d+), environment name (env=.+?), and hyperparameter key (hypers=.+?)
-    match = re.search(r"seed(\d+)-env=(.+?)-hypers=(.+?)\.txt", filename)
+    match = re.search(r"(?:AC_AM)?seed(\d+)-env=(.+?)-hypers=(.+?)\.txt", filename)
+    if match is None:
+        return None
 
     seed_num = int(match.group(1))
     env_name = match.group(2)
@@ -41,19 +43,26 @@ def parse_filename(filename: str):
 def load_file_score(filepath: str):
     # TODO not sure what the format will be.
     with open(filepath, "r") as f:
-        return float(f.readline().strip())
+        return float(f.readline().strip().split(" ")[1])
 
 
 if __name__ == "__main__":
-    PATH = "./multi_env_hyper_eval_results/"
+    PATH = "./hyp_res/AM_CEM/"
     files = glob.glob(PATH + "*.txt")
 
     # Group scores by environment and hyperparameter settings
     env_hyper_scores = defaultdict(lambda: defaultdict(list))
+    num_files = 0
     for file in files:
-        env_name, hyper_key, seed_num = parse_filename(file)
+        parse_file = parse_filename(file)
+        if parse_file is None:
+            continue
+        num_files += 1
+        env_name, hyper_key, seed_num = parse_file
         score = load_file_score(file)
         env_hyper_scores[env_name][hyper_key].append(score)
+
+    print(f"PROCESSED {num_files} FILES")
 
     normalized_scores = {}
     for env_name, hyper_scores in env_hyper_scores.items():

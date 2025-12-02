@@ -9,6 +9,7 @@ tmp/
 venv/
 results/
 test.py
+halfcheetah_sweep/
 
 # C extensions
 *.so

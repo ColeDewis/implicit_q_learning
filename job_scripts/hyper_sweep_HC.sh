@@ -25,7 +25,6 @@ CONFIG=${4:-CEM_AM_10_20_10} # Default CEM on AntMaze with 10 iterations, 10 sam
 
 # Hyperparameters need to match what is in the configs files.
 HYPERPARAMS=(
-    ""
     "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=1,tau=0.0025"
     "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=1,tau=0.005"
     "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=1,tau=0.0075"
@@ -53,7 +52,6 @@ HYPERPARAMS=(
     "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.0025"
     "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.005"
     "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.0075"
-
 )
 
 # Load required modules
@@ -88,6 +86,6 @@ HYPERPARAM_FORMATTED=$(echo $HYPERPARAM | tr ',' '-')
 for ((i=0; i<NUM_SEEDS; i++)); do
     SEED=$i  # Start seeds at 0
     python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --learner=DDQN --eval_episodes=100 --eval_interval=1000000 --seed=$SEED --overrides=$HYPERPARAM
-    RESULT_FILE=$RESULTS_DIR/${CONFIG}seed${SEED}-env=${ENV_NAME}-hypers=${HYPERPARAM_FORMATTED}.txt
-    cp ./tmp/DDQN_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE
+    RESULT_FILE=$RESULTS_DIR/${CONFIG}_seed${SEED}-env=${ENV_NAME}-hypers=${HYPERPARAM_FORMATTED}.txt
+    cp ./tmp/DDQN_CEM_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE
 done
