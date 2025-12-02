@@ -8,7 +8,7 @@
 #SBATCH --mail-type=END,FAIL
 
 # Example usage:
-# sbatch --time=07:00:00 --array=1-7  --export=path="$(pwd)" job_scripts/DDQN_HC_job.sh 11 TUNED_AC_HC
+# sbatch --time=07:00:00 --array=0-5  --export=path="$(pwd)" job_scripts/DDQN_HC_job.sh 11 TUNED_AC_HC
 
 # Set the number of seeds dynamically (first argument)
 NUM_SEEDS=${1:-11}  # Default to 3 seeds if not provided
@@ -16,7 +16,7 @@ NUM_SEEDS=${1:-11}  # Default to 3 seeds if not provided
 # Set the config file to be used
 CONFIG=${2:-TUNED_AC_HC} # Default CEM on AntMaze with 10 iterations, 10 samples, and 5 elite
 
-ENVS = (
+ENVS=(
     "antmaze-large-play-v0"
     "antmaze-umaze-v0"
     "antmaze-umaze-diverse-v0"
@@ -25,7 +25,7 @@ ENVS = (
     "antmaze-large-diverse-v0"
 )
 
-DATASETS = (
+DATASETS=(
     "Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse.hdf5"
     "Ant_maze_u-maze_noisy_multistart_False_multigoal_False_sparse.hdf5"
     "Ant_maze_u-maze_noisy_multistart_True_multigoal_True_sparse.hdf5"

@@ -56,7 +56,7 @@ mkdir -p $RESULTS_DIR
 # Training loop for multiple seeds per hyperparameter
 for ((i=1; i<NUM_SEEDS; i++)); do
     SEED=$i  # Start seeds at 0
-    python $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --eval_episodes=100 --eval_interval=100000 --seed=$SEED --learner=DDQN
+    python $path/train_finetune.py --env_name=$ENV_NAME --config=$path/configs/$CONFIG.py --eval_episodes=100 --eval_interval=100000 --seed=$SEED --learner=DDQN
     RESULT_FILE=$RESULTS_DIR/${CONFIG}_seed${SEED}-env=${ENV_NAME}.txt
-    cp ./tmp/DDQN_${SEED}.txt $RESULT_FILE
+    cp ./tmp/FINETUNE_DDQN_${SEED}.txt $RESULT_FILE
 done
