@@ -50,7 +50,7 @@ cd $SLURM_TMPDIR
 tar -xvf venv310.tar
 source .venv/bin/activate
 
-RESULTS_DIR=$path/results/hyper_sweep/${ENV_NAME}_${DATASET_NAME%.*}/
+RESULTS_DIR=$path/results/offline/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
 
 # Training loop for multiple seeds per hyperparameter

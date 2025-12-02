@@ -8,7 +8,7 @@
 #SBATCH --mail-type=END,FAIL
 
 # Example usage:
-# sbatch --time=07:00:00 --array=0-5  --export=path="$(pwd)" job_scripts/DDQN_HC_job.sh 11 TUNED_AC_HC
+# sbatch --time=07:00:00 --array=0-5  --export=path="$(pwd)" job_scripts/DDQN_AM_job.sh 11 TUNED_AC_HC
 
 # Set the number of seeds dynamically (first argument)
 NUM_SEEDS=${1:-11}  # Default to 3 seeds if not provided
@@ -56,7 +56,7 @@ cd $SLURM_TMPDIR
 tar -xvf venv310.tar
 source .venv/bin/activate
 
-RESULTS_DIR=$path/results/hyper_sweep/${ENV_NAME}_${DATASET_NAME%.*}/
+RESULTS_DIR=$path/results/offline/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
 
 # Training loop for multiple seeds per hyperparameter
