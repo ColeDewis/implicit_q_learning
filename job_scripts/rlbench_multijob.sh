@@ -58,7 +58,7 @@ tar -xf venv310.tar
 tar -xf venv_rlbench.tar
 
 # Create results directory
-RESULTS_DIR=$path/results/CEM_finetune/${ENV_NAME}_${DATASET_NAME%.*}/
+RESULTS_DIR=$path/results/AC_finetune/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
 
 LOGS_DIR=$path/logs/
