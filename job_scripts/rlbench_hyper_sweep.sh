@@ -2,7 +2,7 @@
 
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=nvidia_h100_80gb_hbm3_2g.20gb:1
-#SBATCH --mem=70G
+#SBATCH --mem=16G
 #SBATCH --cpus-per-task=3
 #SBATCH --mail-user=khlynovs@ualberta.ca
 #SBATCH --mail-type=END,FAIL
@@ -19,38 +19,65 @@ ENV_NAME=${2:-microwave}  # Default to "antmaze-large-play-v0" if not provided
 DATASET_NAME=${3:-microwave_data.h5}  # Default datase
 
 # Set the config file to be used
-CONFIG=${4:-CEM_AM_10_20_10} # Default CEM on AntMaze with 10 iterations, 10 samples, and 5 elite
+CONFIG=${4:-mujoco_config} # Default CEM on AntMaze with 10 iterations, 10 samples, and 5 elite
 
 
 # Hyperparameters need to match what is in the configs files.
 HYPERPARAMS=(
-    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=5,tau=0.0025"
-    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=5,tau=0.005"
-    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=5,tau=0.0075"
-    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0025"
-    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.005"
-    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0075"
-    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=15,tau=0.0025"
-    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=15,tau=0.005"
-    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=15,tau=0.0075"
-    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.0025"
-    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.005"
-    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.0075"
-    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=10,tau=0.0025"
-    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=10,tau=0.005"
-    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=10,tau=0.0075"
-    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=15,tau=0.0025"
-    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=15,tau=0.005"
-    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=15,tau=0.0075"
-    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.0025"
-    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.005"
-    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.0075"
-    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=10,tau=0.0025"
-    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=10,tau=0.005"
-    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=10,tau=0.0075"
-    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=15,tau=0.0025"
-    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=15,tau=0.005"
-    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=15,tau=0.0075"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=5,tau=0.0025,expectile=0.5"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=5,tau=0.005,expectile=0.5"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=5,tau=0.0075,expectile=0.5"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0025,expectile=0.5"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.005,expectile=0.5"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0075,expectile=0.5"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=15,tau=0.0025,expectile=0.5"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=15,tau=0.005,expectile=0.5"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=15,tau=0.0075,expectile=0.5"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.0025,expectile=0.5"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.005,expectile=0.5"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.0075,expectile=0.5"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=10,tau=0.0025,expectile=0.5"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=10,tau=0.005,expectile=0.5"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=10,tau=0.0075,expectile=0.5"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=15,tau=0.0025,expectile=0.5"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=15,tau=0.005,expectile=0.5"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=15,tau=0.0075,expectile=0.5"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.0025,expectile=0.5"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.005,expectile=0.5"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.0075,expectile=0.5"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=10,tau=0.0025,expectile=0.5"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=10,tau=0.005,expectile=0.5"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=10,tau=0.0075,expectile=0.5"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=15,tau=0.0025,expectile=0.5"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=15,tau=0.005,expectile=0.5"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=15,tau=0.0075,expectile=0.5"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=5,tau=0.0025,expectile=0.9"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=5,tau=0.005,expectile=0.9"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=5,tau=0.0075,expectile=0.9"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0025,expectile=0.9"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.005,expectile=0.9"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0075,expectile=0.9"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=15,tau=0.0025,expectile=0.9"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=15,tau=0.005,expectile=0.9"
+    "actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=15,tau=0.0075,expectile=0.9"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.0025,expectile=0.9"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.005,expectile=0.9"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.0075,expectile=0.9"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=10,tau=0.0025,expectile=0.9"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=10,tau=0.005,expectile=0.9"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=10,tau=0.0075,expectile=0.9"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=15,tau=0.0025,expectile=0.9"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=15,tau=0.005,expectile=0.9"
+    "actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=15,tau=0.0075,expectile=0.9"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.0025,expectile=0.9"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.005,expectile=0.9"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=5,tau=0.0075,expectile=0.9"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=10,tau=0.0025,expectile=0.9"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=10,tau=0.005,expectile=0.9"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=10,tau=0.0075,expectile=0.9"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=15,tau=0.0025,expectile=0.9"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=15,tau=0.005,expectile=0.9"
+    "actor_lr=0.0001,critic_lr=0.0001,value_lr=0.0001,temperature=15,tau=0.0075,expectile=0.9"
 
 )
 
@@ -82,7 +109,7 @@ tar -xf venv310.tar
 tar -xf venv_rlbench.tar
 
 # Create results directory
-RESULTS_DIR=$path/results/hyper_sweep_finetune/${ENV_NAME}_${DATASET_NAME%.*}/
+RESULTS_DIR=$path/results/hyper_sweep_finetune_iql/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
 mkdir -p tmp
 
