@@ -48,8 +48,8 @@ cp $path/../RLBench/venv_rlbench.tar $SLURM_TMPDIR/
 cp ~/.d4rl/datasets/$DATASET_NAME $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
 
-# OVERRIDE="actor_lr=0.001,critic_lr=0.001,value_lr=0.001,temperature=10,tau=0.0075" # IQL 
-OVERRIDE="" # CEM
+OVERRIDE="actor_lr=0.0003-critic_lr=0.0003-value_lr=0.0003-temperature=5-tau=0.0075-expectile=0.9" # IQL
+# OVERRIDE="" # CEM
 # OVERRIDE="actor_lr=0.0003,critic_lr=0.0003,value_lr=0.0003,temperature=5,tau=0.0025" # AM
 
 
@@ -58,7 +58,7 @@ tar -xf venv310.tar
 tar -xf venv_rlbench.tar
 
 # Create results directory
-RESULTS_DIR=$path/results/test/${ENV_NAME}_${DATASET_NAME%.*}/
+RESULTS_DIR=$path/results/IQL_finetune/${ENV_NAME}_${DATASET_NAME%.*}/
 mkdir -p $RESULTS_DIR
 
 LOGS_DIR=$path/logs/
@@ -81,8 +81,8 @@ for ((i=0; i<STEP_SIZE; i++)); do
     tmux send-keys -t ${SESSION_NAME}:0.0 "cd $SLURM_TMPDIR" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "source .venv/bin/activate" C-m
     tmux send-keys -t ${SESSION_NAME}:0.0 "$setup_iql_cmds" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "python -u $path/train_offline.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED --port=$PORT --overrides=$OVERRIDE 2>&1 | tee -a $LEARNER_LOG_FILE" C-m
-    tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/DDQN_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "python -u $path/train_finetune.py --env_name=$ENV_NAME --config=$path/configs/${CONFIG_NAME} --eval_episodes=100 --eval_interval=${EVAL_INTERVAL} --seed=$SEED --port=$PORT --overrides=$OVERRIDE 2>&1 | tee -a $LEARNER_LOG_FILE" C-m
+    tmux send-keys -t ${SESSION_NAME}:0.0 "cp ./tmp/IQL_${SEED}_${HYPERPARAM_FORMATTED}.txt $RESULT_FILE" C-m
 
 
     # Instance 2 will have rlbench repo:
