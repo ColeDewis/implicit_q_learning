@@ -9,6 +9,7 @@ def load_file_data(file_path):
     """Reads data from a file and returns steps and rewards as numpy arrays."""
     steps, rewards = [], []
     with open(file_path, "r") as file:
+        print(file_path.split("/")[-1])
         print("Found seed:", file_path.split("/")[-1])
         for line in file:
             step, reward = map(float, line.split())
@@ -41,30 +42,36 @@ def main():
     # Hardcoded folder path
     # IQL_FOLDER_PATH = "/home/coled/655/implicit_q_learning/results/IQL/Ant_maze_hardest_noisy_multistart"
     IQL_FOLDER_PATH = (
-        "/home/jaspe/CMPUT 655/implicit_q_learning/DDQN_results/results/hyper_sweep/antmaze-large-play-v0_Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse/IQL",
-        "/home/jaspe/CMPUT 655/implicit_q_learning/DDQN_results/results/hyper_sweep/antmaze-large-play-v0_Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse/AC_AM",
+        "/home/jaspe/CMPUT 655/results (1)/hyper_sweep/halfcheetah-medium-expert-v2_halfcheetah_medium_expert-v2-AC/",
+        "/home/jaspe/CMPUT 655/results (1)/hyper_sweep/halfcheetah-medium-expert-v2_halfcheetah_medium_expert-v2-CEM/",
+        "/home/jaspe/CMPUT 655/results (1)/hyper_sweep/halfcheetah-medium-replay-v2_halfcheetah_medium_replay-v2-AC/",
+        "/home/jaspe/CMPUT 655/results (1)/hyper_sweep/halfcheetah-medium-replay-v2_halfcheetah_medium_replay-v2-CEM/",
+        "/home/jaspe/CMPUT 655/results (1)/hyper_sweep/halfcheetah-medium-v2_halfcheetah_medium-v2-AC/",
+        "/home/jaspe/CMPUT 655/results (1)/hyper_sweep/halfcheetah-medium-v2_halfcheetah_medium-v2-CEM/"
+        # "/home/jaspe/CMPUT 655/implicit_q_learning/DDQN_results/results/hyper_sweep/antmaze-large-play-v0_Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse/IQL",
+        # "/home/jaspe/CMPUT 655/implicit_q_learning/DDQN_results/results/hyper_sweep/antmaze-large-play-v0_Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse/AC_AM",
         # "/home/jaspe/CMPUT 655/implicit_q_learning/DDQN_results/results/hyper_sweep/antmaze-large-play-v0_Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse/GA_AM",
         # "/home/jaspe/CMPUT 655/implicit_q_learning/DDQN_results/results/hyper_sweep/antmaze-large-play-v0_Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse/CEM_AM_10_10_5",
-        "/home/jaspe/CMPUT 655/implicit_q_learning/DDQN_results/results/hyper_sweep/antmaze-large-play-v0_Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse/CEM_AM_10_20_10",
+        # "/home/jaspe/CMPUT 655/implicit_q_learning/DDQN_results/results/hyper_sweep/antmaze-large-play-v0_Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse/CEM_AM_10_20_10",
         # "/home/jaspe/CMPUT 655/implicit_q_learning/DDQN_results/results/hyper_sweep/antmaze-large-play-v0_Ant_maze_hardest-maze_noisy_multistart_True_multigoal_False_sparse/CEM_AM_10_30_15",
     )
 
     COLS = (
         "blue",
         "red",
-        # "yellow",
-        # "orange",
+        "yellow",
+        "orange",
         "green",
-        # "magenta",
+        "magenta",
     )
 
     LABELS = (
-        "IQL",
-        "DDQN-AC",
-        # "DDQN-GA",
-        # "DDQN-CEM (10 Samples)",
-        "DDQN-CEM",
-        # "DDQN-CEM (30 Samples)",
+        "halfcheetah-medium-expert-AC",
+        "halfcheetah-medium-expert-CEM",
+        "halfcheetah-medium-replay-AC",
+        "halfcheetah-medium-replay-CEM",
+        "halfcheetah-medium-AC",
+        "halfcheetah-medium-CEM",
     )
     steps, rewards = aggregate_data_across_seeds(IQL_FOLDER_PATH)
 

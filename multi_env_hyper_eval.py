@@ -70,7 +70,7 @@ if __name__ == "__main__":
         for hyper_key, scores in hyper_scores.items():
             mean_score = np.mean(scores)
             mean_scores[hyper_key] = mean_score
-
+        print(env_name, max(mean_scores.values()))
         # Normalize scores for this environment
         pooled_results = list(mean_scores.values())
         normalized_scores[env_name] = {

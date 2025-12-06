@@ -8,13 +8,13 @@
 #SBATCH --mail-type=END,FAIL
 
 # Example usage:
-# sbatch --time=16:00:00 --array=0-5  --export=path="$(pwd)" job_scripts/DDQN_AM_job_finetune.sh 11 TUNED_AC_HC
+# sbatch --time=16:00:00 --array=0-5  --export=path="$(pwd)" job_scripts/DDQN_AM_job_finetune.sh 11 TUNED_AC_AM
 
 # Set the number of seeds dynamically (first argument)
 NUM_SEEDS=${1:-11}  # Default to 3 seeds if not provided
 
 # Set the config file to be used
-CONFIG=${2:-TUNED_AC_HC} # Default CEM on AntMaze with 10 iterations, 10 samples, and 5 elite
+CONFIG=${2:-TUNED_AC_AM} # Default CEM on AntMaze with 10 iterations, 10 samples, and 5 elite
 
 ENVS=(
     "antmaze-large-play-v0"
